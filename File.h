@@ -4,7 +4,7 @@
 
 class Entry {
 public:
-	char file_start;
+	char file_start, block_no;
     char buffer[31];
     string file_name;
 	bool is_occupied, is_dir;
@@ -14,6 +14,8 @@ public:
 	void stringify();
 	void write(int);
 	void read(int);
+    void read(int, int);
+    void print();
 };
 
 

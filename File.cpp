@@ -7,12 +7,12 @@ int find_empty_entry(int block_no) {
     Entry entry;
     int entry_no = 0;
     do {
-        ++entry_no;
-        if (entry_no > ADDRESS_SPACE / BLOCK_SIZE)
+        if (entry_no > 30)
             throw (entry_no);
         entry.read(entry_no);
+        ++entry_no;
     } while(entry.is_occupied);
-    return entry_no;
+    return entry_no-1;
 }
 
 Entry::Entry(string file_name, char file_start, bool is_dir, bool is_occupied) {
@@ -22,11 +22,17 @@ Entry::Entry(string file_name, char file_start, bool is_dir, bool is_occupied) {
     this->is_occupied = is_occupied;
 }
 
+void Entry::read(int entry_no, int block_no) {
+    this->block_no = block_no;
+    read(entry_no);
+}
+
 void Entry::read(int entry_no) {
 	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-	file.seekg(entry_no << 8);
+	file.seekg(block_no << 8 + 2);
     char buffer[30];
 
+    file.seekg(entry_no*31, ios_base::cur);
 	file.read(buffer, 30);
 	file.read(&file_start, 1);
 
@@ -45,6 +51,13 @@ void Entry::stringify() {
     // return buffer;
 }
 
+void Entry::print() {
+	cout << endl << "===Entry info beg===\n"<< "Block no.: " << (int)block_no << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+}
+
+
+
+
 
 Directory::Directory(char file_start, string file_name, bool is_dir, Header first_header) {
     this->file_start = file_start;
@@ -59,10 +72,12 @@ void Directory::add_entry(string file_name, char file_start, bool is_dir, bool i
     int entry_no = find_empty_entry((int)this->file_start);
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     cout << entry_no;
-    file.seekp((((int)file_start) << 8) + 2 + entry_no*31); // seek to start of first unoccupied entry found
+    file.seekp((((int)this->file_start) << 8) + 2 + entry_no*31); // seek to start of first unoccupied entry found
+    // file.seekp(2);
     entry.stringify();
-    cout<<entry.buffer;
-    file.write("ABC", 31);
+    // cout<<entry.buffer;
+    file.write(entry.buffer, 31);
+    // file.write("\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 31);
     file.close();
 }
 
