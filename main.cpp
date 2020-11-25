@@ -9,14 +9,17 @@
 
 using namespace std;
 
-char buffer[ADDRESS_SPACE];
+// char buffer[ADDRESS_SPACE];
 
 
 int main(int argc, char const *argv[]) {
 	initialize();
 
-	write_file("AB", true);
-	write_file("BA", false);
+	string in;
+	cout << "Enter file contents: " << endl;
+	getline(cin, in);
+	write_file(in, true);
+	// write_file("BAC", false);
 
 	return 0;
 }

@@ -4,14 +4,16 @@
 using namespace std;
 
 
-Header::Header(char prev, char next, bool is_occupied, bool is_dir) {
+Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_dir) {
 	this->is_dir = is_dir;
+	this->block_no = block_no;
 	this->prev = prev;
 	this->next = next;
 	this->is_occupied = is_occupied;
 }
 
 Header::Header(int block_no) {
+	this->block_no = block_no;
 	read(block_no);
 	// cout << (int)prev << endl << (int)next << endl << is_occupied << endl << is_dir << endl;
 }
@@ -40,7 +42,7 @@ void Header::read(int block_no) {
 }
 
 void Header::print() {
-	cout << endl << "===Header info beg===\nPrev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+	cout << endl << "===Header info beg===\n"<< "Block no.: " << block_no << endl << "Prev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
 }
 
 inline bool file_exists(const std::string& file_name) {
@@ -57,7 +59,7 @@ void initialize() {
 		my_file.close();
 
 		char prev = 0, next = 0;
-		Header root_header(prev, next, true, true);
+		Header root_header(0, prev, next, true, true);
 		root_header.write(0);
 		
 		// Header test(1, 1, true, false);

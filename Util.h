@@ -10,10 +10,10 @@ using namespace std;
 
 class Header {
 public:
-	char prev, next;
+	char prev, next, block_no;
 	bool is_occupied, is_dir;
 	Header() {}
-	Header(char, char, bool, bool);
+	Header(char, char, char, bool, bool);
 	Header(int);
 	void print();
 	void write(int);

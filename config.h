@@ -1,4 +1,5 @@
 #define BLOCK_SIZE 256
+#define HEADER_SIZE 2
 #define ADDRESS_SPACE 16384
 #define ROOT_BLOCK 0
 #define DATA_FILE "data.dat"
