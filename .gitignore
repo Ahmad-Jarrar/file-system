@@ -1,3 +1,5 @@
 *.o
 filesystem
-storage/
+test.cpp
+*.dat
+*.sh

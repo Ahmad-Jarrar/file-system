@@ -6,15 +6,6 @@
 
 using namespace std;
 
-class Util
-{
-private:
-	string storage_path;
+void initialize();
 
-public:
-	Util();
-	~Util();
-
-
-	int make_dir(string filename);
-};
+void read_data();

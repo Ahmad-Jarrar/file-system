@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -g -Werror -I.
+CFLAGS=-std=c++17 -Wall -g -Werror -I.
 
 DEPS= File.h Util.h
 OBJ = File.o Util.o main.o
@@ -13,4 +13,4 @@ filesystem: $(OBJ)
 	$(CC) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f *.o filesystem
+	rm -f *.o filesystem *.dat
