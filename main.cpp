@@ -15,11 +15,15 @@ using namespace std;
 int main(int argc, char const *argv[]) {
 	initialize();
 
-	string in;
-	cout << "Enter file contents: " << endl;
-	getline(cin, in);
-	write_file(in, true);
-	// write_file("BAC", false);
+	// string in;
+	// cout << "Enter file contents: " << endl;
+	// getline(cin, in);
+	// write_file(in, true);
+	// // write_file("BAC", false);
+	Header root_header(0);
+	Directory root(0, "root", true, root_header);
+	root.add_entry("Jarrarfile", 2, false, true);
+
 
 	return 0;
 }
