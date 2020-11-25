@@ -1,10 +1,5 @@
-// #include <iostream>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fstream>
 // #include <bitset>
 #include "Util.h"
-#include "config.h"
 
 using namespace std;
 
@@ -23,16 +18,16 @@ Header::Header(int block_no) {
 
 void Header::write(int block_no) {
 	const char buffer[2] = { this->prev, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
-	fstream file("data.dat", ios::binary | ios::out | ios::in);
+	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
 
-	file.seekp(block_no * 256);
-	file << buffer;
+	file.seekp(block_no << 8);
+	file.write(buffer, 2);
 	file.close();
 }
 
 void Header::read(int block_no) {
-	fstream file("data.dat", ios::binary | ios::out | ios::in);
-	file.seekg(block_no * 256);
+	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+	file.seekg(block_no << 8);
 
 	file >> prev;
 	file >> next;
@@ -44,6 +39,10 @@ void Header::read(int block_no) {
 	file.close();
 }
 
+void Header::print() {
+	cout << endl << "===Header info beg===\nPrev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+}
+
 inline bool file_exists(const std::string& file_name) {
   struct stat buffer;   
   return (stat (file_name.c_str(), &buffer) == 0); 
@@ -51,17 +50,18 @@ inline bool file_exists(const std::string& file_name) {
 
 void initialize() {
 	if(!file_exists(DATA_FILE)) {
-		ofstream my_file("data.dat", ios::binary);
+		ofstream my_file(DATA_FILE, ios::binary);
 		char c = 0;
 		for (int i = 0; i < ADDRESS_SPACE; i++)
 			my_file.write(&c, 1);
 		my_file.close();
 
-		char prev = 16, next = 15;
-		Header root_header(prev, next, true, false);
+		char prev = 0, next = 0;
+		Header root_header(prev, next, true, true);
 		root_header.write(0);
 		
-		Header test(0);
+		// Header test(1, 1, true, false);
+		// test.write(1);
 		// cout << bitset<16>(build_header('?', '>', true, true)) << endl;
 	}
 }

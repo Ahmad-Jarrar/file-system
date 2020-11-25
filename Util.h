@@ -1,8 +1,10 @@
 #include <iostream>
-#include <map>
+#include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
+#include "config.h"
+
 
 using namespace std;
 
@@ -10,9 +12,10 @@ class Header {
 public:
 	char prev, next;
 	bool is_occupied, is_dir;
-
+	Header() {}
 	Header(char, char, bool, bool);
 	Header(int);
+	void print();
 	void write(int);
 	void read(int);
 };
