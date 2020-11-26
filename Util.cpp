@@ -12,6 +12,14 @@ Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_di
 	this->is_occupied = is_occupied;
 }
 
+Header::Header(Header* header) {
+	this->block_no = header->block_no;
+	this->is_dir = header->is_dir;
+	this->is_occupied = header->is_occupied;
+	this->next = header->next;
+	this->prev = header->prev;
+}
+
 Header::Header(int block_no) {
 	this->block_no = block_no;
 	read(block_no);

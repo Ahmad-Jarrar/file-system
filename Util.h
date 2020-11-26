@@ -13,6 +13,7 @@ public:
 	char prev, next, block_no;
 	bool is_occupied, is_dir;
 	Header() {}
+	Header(Header*);
 	Header(char, char, char, bool, bool);
 	Header(int);
 	void print();

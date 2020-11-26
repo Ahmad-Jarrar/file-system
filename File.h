@@ -4,7 +4,7 @@
 
 class Entry {
 public:
-	char file_start, block_no;
+	char file_start, block_no, entry_no;
     char buffer[31];
     string file_name;
 	bool is_occupied, is_dir;
@@ -32,6 +32,8 @@ public:
     Directory() {}
     Directory(char, string, bool, Header);
     // void create_file(string file_contents);
+
+    Entry find_empty_entry();
 
     void add_entry(string, char, bool, bool);
     /* TODO:
