@@ -1,8 +1,8 @@
 CC=g++
 CFLAGS=-std=c++17 -Wall -g -Werror -I.
 
-DEPS= File.h Util.h
-OBJ = File.o Util.o main.o
+DEPS= File.h Util.h Dir.h
+OBJ = File.o Util.o Dir.o main.o 
 
 # LIBS=-lpthread
 

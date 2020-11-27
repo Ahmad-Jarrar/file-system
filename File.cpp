@@ -3,31 +3,6 @@
 
 using namespace std;
 
-void write_block(Header header, string file_contents, char block_no, bool is_last) {
-    header.write(block_no);
-
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp((((int)block_no) << 8) + 2);
-
-    // file.write(file_contents.c_str(), file_contents.length());
-    // file.write(0, 1);
-
-    file << file_contents;
-    if(is_last) file << '\0';
-    file.close();
-}
-
-int find_empty_block(int start_block = 0) {
-    Header header;
-    do {
-        ++start_block;
-        if (start_block > ADDRESS_SPACE / BLOCK_SIZE)
-            throw (start_block);
-        header.read(start_block);
-    } while(header.is_occupied);
-    return start_block;
-}
-
 void write_file(string file_contents, bool is_dir) {
     int blocks_required = (file_contents.length() + 1) / (BLOCK_SIZE - 2) + 1;
     int blocks[blocks_required];

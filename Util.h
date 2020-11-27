@@ -45,4 +45,10 @@ void read_data();
 
 void write_file_entry(string file_name, char file_start, bool is_dir);
 
+void write_block(Header header, string file_contents, char block_no, bool is_last);
+
+int find_empty_block(int);
+
+Header find_last_header(Header);
+
 Entry find_empty_entry_helper(int block_no);
