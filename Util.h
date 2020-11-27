@@ -38,10 +38,9 @@ public:
     void print();
 };
 
-
-void initialize();
-
 void read_data();
+
+string trim(string& str);
 
 void write_file_entry(string file_name, char file_start, bool is_dir);
 
@@ -51,6 +50,8 @@ int find_empty_block(int);
 
 Header find_last_header(Header);
 
-Entry find_empty_entry_helper(int block_no);
+Entry find_empty_entry_helper(int);
+
+Entry search_entry_helper(int, string, bool, bool);
 
 void allocate_extra_block(Header);

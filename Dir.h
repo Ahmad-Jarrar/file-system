@@ -11,6 +11,7 @@ public:
 
     Directory() {}
     Directory(char, string, bool, Header, Entry);
+    Directory(Entry);
     // void create_file(string file_contents);
 
     Entry find_empty_entry();
@@ -18,18 +19,15 @@ public:
     void add_entry(string, char, bool, bool);
 
     Entry entrify();
-    
+
     void add_entry(Entry);
-    /* TODO:
-        - MOVE
-        - MOVE-WITHIN-FILE
-        - APPEND
-        - DELETE
-        - COPY
-    */
 
-   void read();
+    Entry find_entry(string);
+    Entry find_entry(string, bool, bool);
+
+    void remove_entry(string);
+    void remove_entry(Entry);
+
+    void write();
+    void print();
 };
-
-
-void create_directory();    // make header in a new block; adds an entry to

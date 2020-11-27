@@ -98,6 +98,12 @@ void Entry::read(int entry_no) {
 	file_start = file_start & H_NEXT_MASK;
     file_name = *(new string(buffer));
 
+    file_name = trim(file_name);
+        
+    
+    
+
+
 	file.close();
 }
 
@@ -120,10 +126,7 @@ void Entry::print() {
 	=================
 */
 
-inline bool file_exists(const std::string& file_name) {
-  struct stat buffer;   
-  return (stat (file_name.c_str(), &buffer) == 0); 
-}
+
 
 void write_file_entry(string file_name, char file_start, bool is_dir) {
     // file_name = file_name.substr(0, 30); TODO: VALIDATE LENGTH OF FILE NAME UPON ENTRY
@@ -132,6 +135,18 @@ void write_file_entry(string file_name, char file_start, bool is_dir) {
     for (int i = 0; i < padding; i++) {
         file_name += (char)0;
     }
+}
+
+string trim(string& str)
+{
+    const auto strBegin = str.find_first_not_of(" ");
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(" ");
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
 }
 
 void write_block(Header header, string file_contents, char block_no, bool is_last) {
@@ -179,6 +194,21 @@ Entry find_empty_entry_helper(int block_no) {
     return entry;
 }
 
+Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool file_only) {
+	
+    Entry entry;
+    int entry_no = 0;
+    do {
+        if (entry_no > 7)
+            throw (entry_no);
+        entry.read(entry_no, block_no);
+		// cout << "Entry name:" << entry.file_name << endl << "file name:" << file_name << endl;
+        ++entry_no;
+    } while(entry.file_name.compare(file_name) || (dir_only ? !entry.is_dir : false) || (file_only ? entry.is_dir : false));
+    entry.read(entry_no-1);
+    return entry;
+}
+
 void allocate_extra_block(Header first_header) {
 	int new_block_no = find_empty_block(0);
 	Header last_header = find_last_header(first_header);
@@ -189,23 +219,4 @@ void allocate_extra_block(Header first_header) {
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
 
-}
-
-
-void initialize() {
-	if(!file_exists(DATA_FILE)) {
-		ofstream my_file(DATA_FILE, ios::binary);
-		char c = 0;
-		for (int i = 0; i < ADDRESS_SPACE; i++)
-			my_file.write(&c, 1);
-		my_file.close();
-
-		char prev = 0, next = 0;
-		Header root_header(0, prev, next, true, true);
-		root_header.write(0);
-		
-		// Header test(1, 1, true, false);
-		// test.write(1);
-		// cout << bitset<16>(build_header('?', '>', true, true)) << endl;
-	}
 }
