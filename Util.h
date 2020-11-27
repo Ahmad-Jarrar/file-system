@@ -52,3 +52,5 @@ int find_empty_block(int);
 Header find_last_header(Header);
 
 Entry find_empty_entry_helper(int block_no);
+
+void allocate_extra_block(Header);

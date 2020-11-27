@@ -27,16 +27,10 @@ int main(int argc, char const *argv[]) {
 	root.add_entry("newstest3 entry", 7, false, true);
 	root.add_entry("newstest4 entry", 7, false, true);
 	root.add_entry("newstest5 entry", 7, false, true);
-	root.add_entry("newstest6 entry", 7, false, true);
-	root.add_entry("newstest7 entry", 7, false, true);
-	root.add_entry("newstest8 entry", 7, false, true);
-	root.add_entry("newstest9 entry", 7, false, true);
-
-	Entry entry;
-	cout << endl << endl;
-	entry.read(5,0);
-	// entry.print();
-
+	// root.add_entry("newstest6 entry", 7, false, true);
+	// root.add_entry("newstest7 entry", 7, false, true);
+	// root.add_entry("newstest8 entry", 7, false, true);
+	// root.add_entry("newstest9 entry", 7, false, true);
 
 
 	return 0;

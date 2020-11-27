@@ -169,18 +169,28 @@ Header find_last_header(Header first_header) {
 Entry find_empty_entry_helper(int block_no) {
     Entry entry;
     int entry_no = 0;
-	cout << "BLOCK " << block_no << endl;
     do {
-		cout << entry_no << " ";
         if (entry_no > 7)
             throw (entry_no);
         entry.read(entry_no, block_no);
         ++entry_no;
     } while(entry.is_occupied);
-	cout << endl;
     entry.read(entry_no-1);
     return entry;
 }
+
+void allocate_extra_block(Header first_header) {
+	int new_block_no = find_empty_block(0);
+	Header last_header = find_last_header(first_header);
+	
+	last_header.next = new_block_no;
+	last_header.write(last_header.block_no);
+
+	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
+	new_last_header.write(new_last_header.block_no);
+
+}
+
 
 void initialize() {
 	if(!file_exists(DATA_FILE)) {
