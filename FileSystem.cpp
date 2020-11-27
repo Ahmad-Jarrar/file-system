@@ -7,7 +7,7 @@ FileSystem::FileSystem(){
 
     initialize();
     Header root_header(0);
-	current_dir = *(new Directory(0, "root", true, root_header, Entry("root", 0, true, true)));
+	current_dir = *(new Directory(0, "/", true, root_header, Entry("/", 0, true, true)));
 
 }
 
@@ -26,7 +26,7 @@ void FileSystem::initialize() {
         root_header.is_dir = root_header.is_occupied = true;
         root_header.write(0);
         root_header.read(root_header.block_no);
-        Directory root(0, "root", true, root_header, Entry("root", 0, true, true));
+        Directory root(0, "/", true, root_header, Entry("/", 0, true, true));
 		root.write();
 	}
 }
@@ -93,5 +93,21 @@ void FileSystem::rm(string file_name) {
 }
 
 void FileSystem::run(string command) {
+    vector<string> tokens = split_string(command);
 
+    if (!tokens[0].compare("ls")) {
+        ls();
+    }
+    else if (!tokens[0].compare("mkdir")) {
+        mkdir(tokens[1]);
+    }
+    else if (!tokens[0].compare("rm")) {
+        rm(tokens[1]);
+    }
+    else if (!tokens[0].compare("cd")) {
+        cd(tokens[1]);
+    }
+    else if (!tokens[0].compare("pwd")) {
+        pwd();
+    }
 }

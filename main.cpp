@@ -15,6 +15,18 @@ using namespace std;
 int main(int argc, char const *argv[]) {
 
 	FileSystem file_system;
+
+	while(true) {
+		string command;
+		cout << ">> ";
+		getline(cin, command);
+		if (!command.compare("exit"))
+			break;
+		else {
+			file_system.run(command);
+		}
+	}
+	/*
 	file_system.mkdir("dir1");
 	file_system.cd("dir1");
 	file_system.mkdir("dir2");
@@ -48,6 +60,6 @@ int main(int argc, char const *argv[]) {
 	file_system.cd("..");
 	file_system.pwd();
 	file_system.ls();
-
+	*/
 	return 0;
 }

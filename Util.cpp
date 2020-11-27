@@ -229,3 +229,10 @@ void allocate_extra_block(Header first_header) {
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
 }
+
+vector<string> split_string(string s) {
+	stringstream ss(s);
+	istream_iterator<string> begin(ss);
+	istream_iterator<string> end;
+	return vector<string>(begin, end);
+}

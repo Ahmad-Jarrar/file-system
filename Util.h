@@ -4,6 +4,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
+#include <vector>
+#include <iterator>
+#include <sstream>
 #include "config.h"
 
 
@@ -59,3 +62,5 @@ Entry search_entry_helper(int, string, bool, bool);
 void list_entry_helper(int, bool);
 
 void allocate_extra_block(Header);
+
+vector<string> split_string(string);
