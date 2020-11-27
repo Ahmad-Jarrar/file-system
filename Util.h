@@ -19,6 +19,7 @@ public:
 	Header(int);
 	void print();
 	void write(int);
+	void write();
 	void read(int);
 };
 
@@ -32,7 +33,8 @@ public:
 	Entry(string, char, bool, bool);
 	// Entry(int);
 	void stringify();
-	void write(int);
+	void write();
+
 	void read(int);
     void read(int, int);
     void print();
@@ -53,5 +55,7 @@ Header find_last_header(Header);
 Entry find_empty_entry_helper(int);
 
 Entry search_entry_helper(int, string, bool, bool);
+
+void list_entry_helper(int, bool);
 
 void allocate_extra_block(Header);

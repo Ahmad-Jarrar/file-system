@@ -17,10 +17,11 @@ public:
     Entry find_empty_entry();
 
     void add_entry(string, char, bool, bool);
-
-    Entry entrify();
-
     void add_entry(Entry);
+    
+    void list_contents();
+
+    Entry entrify();    
 
     Entry find_entry(string);
     Entry find_entry(string, bool, bool);

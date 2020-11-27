@@ -9,7 +9,7 @@ public:
     void run(string);
     void mkdir(string); // Done
     void cd(string);    // Done
-    void ls();          // TODO
+    void ls();          // Done
     void rm(string);    // TODO
     void mv(string, string); // TODO
     void create(string);    // TODO

@@ -7,7 +7,7 @@ FileSystem::FileSystem(){
 
     initialize();
     Header root_header(0);
-	current_dir = *(new Directory(0, "/", true, root_header, Entry("/", 0, true, true)));
+	current_dir = *(new Directory(0, "root", true, root_header, Entry("root", 0, true, true)));
 
 }
 
@@ -23,7 +23,10 @@ void FileSystem::initialize() {
 
 
         Header root_header(0);
-        Directory root(0, "/", true, root_header, Entry("/", 0, true, true));
+        root_header.is_dir = root_header.is_occupied = true;
+        root_header.write(0);
+        root_header.read(root_header.block_no);
+        Directory root(0, "root", true, root_header, Entry("root", 0, true, true));
 		root.write();
 	}
 }
@@ -53,23 +56,40 @@ void FileSystem::pwd() {
 void FileSystem::cd(string dir_name){
     Entry entry;
 
-    if (!dir_name.compare(".."))
-    {
+    if (!dir_name.compare("..")) {
         current_dir = current_dir.parent_dir;
         return;
     }
     
-    try
-    {
+    try {
         entry = current_dir.find_entry(dir_name, true, false);
         Directory child_dir(entry);
         current_dir = child_dir;
     }
-    catch(int err)
-    {
+    catch(int err) {
         cout << dir_name << " does not exist" << endl;
     }
     
+}
+
+void FileSystem::ls() {
+    current_dir.list_contents();
+}
+
+void FileSystem::rm(string file_name) {
+    Entry entry = current_dir.find_entry(file_name);
+    Directory directory;    // use to recursively remove non-empty directories
+    Header last_header = find_last_header(Header(entry.file_start));
+
+    while (true) {
+        last_header.is_occupied = false;
+        last_header.write();
+        if(last_header.prev == 0)
+            break;
+        last_header.read(last_header.prev);
+    }
+    entry.is_occupied = false;
+    entry.write();
 }
 
 void FileSystem::run(string command) {
