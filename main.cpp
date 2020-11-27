@@ -35,7 +35,7 @@ int main(int argc, char const *argv[]) {
 	Entry entry;
 	cout << endl << endl;
 	entry.read(5,0);
-	entry.print();
+	// entry.print();
 
 
 

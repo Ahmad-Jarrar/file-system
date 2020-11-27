@@ -1,19 +1,31 @@
 #include "Dir.h"
 
+
 Entry Directory::find_empty_entry() {
-    int block_no = first_header.block_no;
-    Entry entry;
     Header header(&first_header);
-    
-    do {
-        try {
+
+    while (true) {
+        if (header.next == 0) {
             return find_empty_entry_helper(header.block_no);
         }
-        catch(int err) {
-            header.read(header.next);
+        else {
+            try {
+                return find_empty_entry_helper(header.block_no);
+            }
+            catch (int i) {
+                header = new Header(header.next);
+            }
         }
-    } while(header.next != 0);
+    }
     return *(new Entry("",0,false, true));
+/*
+    try {
+        return find_empty_entry_helper(header.block_no);
+    }
+    catch (int i) {
+        if (header.next != 0)
+            header.read(header.next);
+    }*/
 }
 
 
@@ -22,12 +34,15 @@ Directory::Directory(char file_start, string file_name, bool is_dir, Header firs
     this->file_name = file_name;
     this->is_dir = is_dir;
     this->first_header = first_header;
+    first_header.write(first_header.block_no);
 }
 
 void Directory::add_entry(string file_name, char file_start, bool is_dir, bool is_occupied) {
-    Entry entry = find_empty_entry();
-
-    if (entry.is_occupied) {
+    Entry entry;
+    try {
+        entry = find_empty_entry();
+    }
+    catch (int i) {
         int new_block_no = find_empty_block(0);
         Header last_header = find_last_header(first_header);
         
@@ -35,12 +50,20 @@ void Directory::add_entry(string file_name, char file_start, bool is_dir, bool i
         last_header.write(last_header.block_no);
 
         Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
-
-        entry = find_empty_entry();
+        new_last_header.write(new_last_header.block_no);
+        try {
+            entry = find_empty_entry();
+        }
+        catch (int b) {
+            cout << b << "==========" << endl;
+        }
     }
+   
 
     entry.file_name = file_name; entry.file_start = file_start; 
     entry.is_dir = is_dir; entry.is_occupied = is_occupied;
+
+    entry.print();
 
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     // cout << entry.entry_no;

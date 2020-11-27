@@ -58,7 +58,7 @@ void Header::read(int block_no) {
 }
 
 void Header::print() {
-	cout << endl << "===Header info beg===\n"<< "Block no.: " << block_no << endl << "Prev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+	cout << endl << "===Header info beg===\n"<< "Block no.: " << (int)block_no << endl << "Prev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
 }
 
 /*
@@ -109,7 +109,7 @@ void Entry::stringify() {
 }
 
 void Entry::print() {
-	cout << endl << "===Entry info beg===\n"<< "Block no.: " << (int)block_no << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+	cout << endl << "===Entry info beg===\n"<< "Block no.: " << (int)block_no << " Entry no.: " << (int)entry_no << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Entry info end===\n";
 }
 
 /*
@@ -152,7 +152,7 @@ int find_empty_block(int start_block = 0) {
     Header header;
     do {
         ++start_block;
-        if (start_block > ADDRESS_SPACE / BLOCK_SIZE)
+        if (start_block > ADDRESS_SPACE / BLOCK_SIZE - 1)
             throw (start_block);
         header.read(start_block);
     } while(header.is_occupied);
@@ -169,12 +169,15 @@ Header find_last_header(Header first_header) {
 Entry find_empty_entry_helper(int block_no) {
     Entry entry;
     int entry_no = 0;
+	cout << "BLOCK " << block_no << endl;
     do {
+		cout << entry_no << " ";
         if (entry_no > 7)
             throw (entry_no);
-        entry.read(entry_no);
+        entry.read(entry_no, block_no);
         ++entry_no;
     } while(entry.is_occupied);
+	cout << endl;
     entry.read(entry_no-1);
     return entry;
 }
