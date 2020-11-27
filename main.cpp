@@ -4,7 +4,7 @@
 #include <cstring>
 #include <unistd.h>
 #include "config.h"
-#include "Dir.h"
+#include "FileSystem.h"
 
 
 using namespace std;
@@ -13,25 +13,10 @@ using namespace std;
 
 
 int main(int argc, char const *argv[]) {
-	initialize();
 
-	// string in;
-	// cout << "Enter file contents: " << endl;
-	// getline(cin, in);
-	// write_file(in, true);
-	// // write_file("BAC", false);
-	Header root_header(0);
-	Directory root(0, "root", true, root_header);
-	root.add_entry("newstest1 entry", 7, false, true);
-	root.add_entry("newstest2 entry", 7, false, true);
-	root.add_entry("newstest3 entry", 7, false, true);
-	root.add_entry("newstest4 entry", 7, false, true);
-	root.add_entry("newstest5 entry", 7, false, true);
-	// root.add_entry("newstest6 entry", 7, false, true);
-	// root.add_entry("newstest7 entry", 7, false, true);
-	// root.add_entry("newstest8 entry", 7, false, true);
-	// root.add_entry("newstest9 entry", 7, false, true);
-
+	FileSystem file_system;
+	file_system.mkdir("dir1");
+	file_system.mkdir("dir2");
 
 	return 0;
 }

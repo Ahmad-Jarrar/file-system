@@ -16,6 +16,6 @@ public:
     void open(string);
     void append(string);
 
-    void allocate_block(Directory);
-    void free_block(int);
+    // void allocate_block(Directory);
+    void free_block(char);
 };

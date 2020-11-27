@@ -7,15 +7,19 @@ public:
     bool is_dir;
     int total_blocks;
     Header first_header;
-    // parent directory
+    Entry parent_dir;
 
     Directory() {}
-    Directory(char, string, bool, Header);
+    Directory(char, string, bool, Header, Entry);
     // void create_file(string file_contents);
 
     Entry find_empty_entry();
 
     void add_entry(string, char, bool, bool);
+
+    Entry entrify();
+    
+    void add_entry(Entry);
     /* TODO:
         - MOVE
         - MOVE-WITHIN-FILE
@@ -23,6 +27,8 @@ public:
         - DELETE
         - COPY
     */
+
+   void read();
 };
 
 
