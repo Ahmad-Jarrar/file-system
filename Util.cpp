@@ -4,6 +4,14 @@
 using namespace std;
 
 
+/*
+	============
+	============
+	Header Class
+	============
+	============
+*/
+
 Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_dir) {
 	this->is_dir = is_dir;
 	this->block_no = block_no;
@@ -53,9 +61,90 @@ void Header::print() {
 	cout << endl << "===Header info beg===\n"<< "Block no.: " << block_no << endl << "Prev: " << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
 }
 
+/*
+	===========
+	===========
+	Entry Class
+	===========
+	===========
+*/
+
+Entry::Entry(string file_name, char file_start, bool is_dir, bool is_occupied) {
+    this->file_start = file_start;
+    this->file_name = file_name;
+    this->is_dir = is_dir;
+    this->is_occupied = is_occupied;
+}
+
+void Entry::read(int entry_no, int block_no) {
+    this->block_no = block_no;
+    read(entry_no);
+}
+
+void Entry::read(int entry_no) {
+    this->entry_no = entry_no;
+	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+	file.seekg((block_no << 8) + 2 + entry_no*31);
+    char buffer[30];
+
+    // file.seekg(entry_no*31, ios_base::cur);
+	file.read(buffer, 30);
+	file.read(&file_start, 1);
+
+    // cout << "startout====" << buffer << "*" << hex << (int)file_start << "===endout" << endl;
+
+	is_occupied = (bool)(file_start & IS_OCCUPIED);
+	is_dir = (bool)(file_start & IS_DIR);
+	file_start = file_start & H_NEXT_MASK;
+    file_name = *(new string(buffer));
+
+	file.close();
+}
+
+void Entry::stringify() {
+    char last_char = this->file_start;
+    last_char = last_char | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0);
+    sprintf(buffer, "%30s%c", this->file_name.c_str(), last_char);
+    // return buffer;
+}
+
+void Entry::print() {
+	cout << endl << "===Entry info beg===\n"<< "Block no.: " << (int)block_no << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+}
+
+/*
+	=================
+	=================
+	Utility Functions
+	=================
+	=================
+*/
+
 inline bool file_exists(const std::string& file_name) {
   struct stat buffer;   
   return (stat (file_name.c_str(), &buffer) == 0); 
+}
+
+void write_file_entry(string file_name, char file_start, bool is_dir) {
+    // file_name = file_name.substr(0, 30); TODO: VALIDATE LENGTH OF FILE NAME UPON ENTRY
+    file_start = file_start | (is_dir ? IS_DIR : 0);
+    int padding = 30 - file_name.length();
+    for (int i = 0; i < padding; i++) {
+        file_name += (char)0;
+    }
+}
+
+Entry find_empty_entry_helper(int block_no) {
+    Entry entry;
+    int entry_no = 0;
+    do {
+        if (entry_no > 8)
+            throw (entry_no);
+        entry.read(entry_no);
+        ++entry_no;
+    } while(entry.is_occupied);
+    entry.read(entry_no-1);
+    return entry;
 }
 
 void initialize() {
