@@ -109,8 +109,54 @@ Entry Directory::find_entry(string name,bool dir_only, bool file_only) {
 
 }
 
+
+void Directory::clear() {
+
+    Header header(&first_header);
+
+    while (true) {
+        Entry entry;
+        bool first_block = first_header.block_no == header.block_no;
+        if (first_block) {
+            entry.read(0, header.block_no);
+            entry.is_occupied = false;
+            entry.write();
+        }
+
+        for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
+            entry.read(entry_no, header.block_no);
+            
+            if (!entry.is_occupied)
+                continue;
+
+            if(entry.is_dir) {
+                Directory dir(entry);
+                dir.clear();
+            }
+            delete_file(entry);  
+        }
+        if (header.next == 0)
+            break;
+        header.read(header.next);
+    }
+
+}
+
 Entry Directory::find_entry(string name) {
     return find_entry(name, false, false);
+}
+
+bool Directory::is_empty() {
+    Header header(&first_header);
+    
+    while (true) {
+        if(!is_empty_helper(header.block_no, first_header.block_no == header.block_no))
+            return false;
+        if (header.next == 0)  
+            break;
+        header = new Header(header.next);
+    }
+    return true;
 }
 
 

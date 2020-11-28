@@ -77,19 +77,46 @@ void FileSystem::ls() {
 }
 
 void FileSystem::rm(string file_name) {
-    Entry entry = current_dir.find_entry(file_name);
-    Directory directory;    // use to recursively remove non-empty directories
-    Header last_header = find_last_header(Header(entry.file_start));
+    rm(file_name, false);
+}
 
-    while (true) {
-        last_header.is_occupied = false;
-        last_header.write();
-        if(last_header.prev == 0)
-            break;
-        last_header.read(last_header.prev);
+void FileSystem::rm(string file_name, bool recursive) {
+    Entry entry;
+    try
+    {
+        entry = current_dir.find_entry(file_name);   
     }
-    entry.is_occupied = false;
-    entry.write();
+    catch(int err)
+    {
+        cout << file_name << " not found" << endl;
+    }
+
+    if (entry.is_dir)
+    {
+        Directory directory(entry);
+
+        if (!directory.is_empty() && !recursive)
+        {
+            cout << "Directory not empty. Use -r flag to delete recursively" << endl;
+            return;
+        } else if (!directory.is_empty() && recursive) {
+            directory.clear();
+        }
+    }
+    
+    delete_file(entry);
+}
+
+void FileSystem::stat_(string file_name) {
+    Entry entry = current_dir.find_entry(file_name);
+    if (entry.is_dir) {
+        Directory directory(entry);
+        if (directory.is_empty()) {
+            cout << "Directory is empty" << endl;
+        } else {
+            cout << "Directory is non-empty" << endl;
+        }
+    }
 }
 
 void FileSystem::run(string command) {
@@ -101,6 +128,9 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("mkdir")) {
         mkdir(tokens[1]);
     }
+    else if (!tokens[0].compare("rm") && !tokens[1].compare("-r")) {
+        rm(tokens[2], true);
+    }
     else if (!tokens[0].compare("rm")) {
         rm(tokens[1]);
     }
@@ -109,5 +139,8 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("pwd")) {
         pwd();
+    }
+    else if (!tokens[0].compare("stat")) {
+        stat_(tokens[1]);
     }
 }

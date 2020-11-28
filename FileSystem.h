@@ -11,6 +11,8 @@ public:
     void cd(string);    // Done
     void ls();          // Done
     void rm(string);    // TODO
+    void rm(string, bool);  // TODO
+    void stat_(string);
     void mv(string, string); // TODO
     void create(string);    // TODO
     void open(string);      // TODO

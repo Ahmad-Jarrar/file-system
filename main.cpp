@@ -21,7 +21,7 @@ int main(int argc, char const *argv[]) {
 		cout << ">> ";
 		getline(cin, command);
 		if (!command.compare("exit"))
-			break;
+			exit(-1);
 		else {
 			file_system.run(command);
 		}

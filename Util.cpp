@@ -203,6 +203,18 @@ Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool fi
     return entry;
 }
 
+bool is_empty_helper(int block_no, bool first_block) {
+    Entry entry;
+    int entry_no = first_block ? 1 : 0;
+    do {
+        if (entry_no > 7)
+            return true;
+        entry.read(entry_no, block_no);
+        ++entry_no;
+    } while(!entry.is_occupied);
+    return false;
+}
+
 
 void list_entry_helper(int block_no, bool first_block) {
     Entry entry;
@@ -228,6 +240,20 @@ void allocate_extra_block(Header first_header) {
 
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
+}
+
+void delete_file(Entry entry) {
+    Header first_header = Header(entry.file_start);
+
+    while (true) {
+        first_header.is_occupied = false;
+        first_header.write();
+        if(first_header.next == 0)
+            break;
+        first_header.read(first_header.next);
+    }
+    entry.is_occupied = false;
+    entry.write();
 }
 
 vector<string> split_string(string s) {

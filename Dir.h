@@ -29,6 +29,10 @@ public:
     void remove_entry(string);
     void remove_entry(Entry);
 
+    void clear();
+
+    bool is_empty();
+
     void write();
     void print();
 };

@@ -59,8 +59,12 @@ Entry find_empty_entry_helper(int);
 
 Entry search_entry_helper(int, string, bool, bool);
 
+bool is_empty_helper(int, bool);
+
 void list_entry_helper(int, bool);
 
 void allocate_extra_block(Header);
+
+void delete_file(Entry);
 
 vector<string> split_string(string);
