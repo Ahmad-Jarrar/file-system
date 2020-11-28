@@ -107,6 +107,10 @@ void FileSystem::rm(string file_name, bool recursive) {
     delete_file(entry);
 }
 
+void FileSystem::mv(string source, string destination) {
+    
+}
+
 void FileSystem::stat_(string file_name) {
     Entry entry = current_dir.find_entry(file_name);
     if (entry.is_dir) {

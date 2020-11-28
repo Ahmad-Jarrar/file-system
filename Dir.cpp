@@ -109,6 +109,21 @@ Entry Directory::find_entry(string name,bool dir_only, bool file_only) {
 
 }
 
+void Directory::remove_entry(string file_name) {
+    try
+    {
+        find_entry(file_name).clear();
+
+    }
+    catch(int err)
+    {
+        cout << "Exception: trying to remove non-existant entry" << endl;
+        exit(1);
+    }
+    
+}
+
+
 
 void Directory::clear() {
 
@@ -119,8 +134,8 @@ void Directory::clear() {
         bool first_block = first_header.block_no == header.block_no;
         if (first_block) {
             entry.read(0, header.block_no);
-            entry.is_occupied = false;
-            entry.write();
+            entry.clear();
+            
         }
 
         for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {

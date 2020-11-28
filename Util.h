@@ -38,6 +38,7 @@ public:
 	void stringify();
 	void write();
 
+	void clear();
 	void read(int);
     void read(int, int);
     void print();
@@ -66,5 +67,7 @@ void list_entry_helper(int, bool);
 void allocate_extra_block(Header);
 
 void delete_file(Entry);
+
+void parse_path(string);
 
 vector<string> split_string(string);

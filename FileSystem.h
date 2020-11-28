@@ -10,10 +10,10 @@ public:
     void mkdir(string); // Done
     void cd(string);    // Done
     void ls();          // Done
-    void rm(string);    // TODO
-    void rm(string, bool);  // TODO
-    void stat_(string);
-    void mv(string, string); // TODO
+    void rm(string);    // Done
+    void rm(string, bool);  // Done
+    void stat_(string);     // Done
+    void mv(string, string);// TODO
     void create(string);    // TODO
     void open(string);      // TODO
     void append(string);    // TODO

@@ -1,14 +1,29 @@
-#include "Util.h"
+#include "Dir.h"
 
 
 class File {
 public:
     char file_start;
-    string file_name[30];
+    string file_name;
     bool is_dir;
-    int total_blocks;
+    // int total_blocks;
     Header first_header;
 
+
+    File();
+    File(string, char, Header);
+    File(Entry);
+
+    void open(string);
+
+    void read();
+    void read(int);
+    void read(int, int);
+
+    void append(string);
+    void append(string, int);
+
+    void write(string);
     
     // void create_file(string file_contents);
 
@@ -20,8 +35,3 @@ public:
         - COPY
     */
 };
-
-
-void write_contents(Header first_header, string file_contents, char file_start);
-
-void write_file(string file_contents, bool is_dir);

@@ -99,11 +99,16 @@ void Entry::read(int entry_no) {
 
 void Entry::write() {
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp((((int)block_no) << 8) + 2 + entry_no*31); // seek to start of first unoccupied entry found
+    file.seekp((((int)block_no) << 8) + 2 + entry_no*31);
     
     stringify();
     file.write(buffer, 31);
     file.close();
+}
+
+void Entry::clear() {
+    this->is_occupied = false;
+    write();
 }
 
 void Entry::stringify() {
@@ -149,10 +154,6 @@ void write_block(Header header, string file_contents, char block_no, bool is_las
 
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     file.seekp((((int)block_no) << 8) + 2);
-
-    // file.write(file_contents.c_str(), file_contents.length());
-    // file.write(0, 1);
-
     file << file_contents;
     if(is_last) file << '\0';
     file.close();
@@ -196,7 +197,6 @@ Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool fi
         if (entry_no > 7)
             throw (entry_no);
         entry.read(entry_no, block_no);
-		// cout << "Entry name:" << entry.file_name << endl << "file name:" << file_name << endl;
         ++entry_no;
     } while(entry.file_name.compare(file_name) || (dir_only ? !entry.is_dir : false) || (file_only ? entry.is_dir : false));
     entry.read(entry_no-1);
@@ -252,8 +252,11 @@ void delete_file(Entry entry) {
             break;
         first_header.read(first_header.next);
     }
-    entry.is_occupied = false;
-    entry.write();
+    entry.clear();
+}
+
+void parse_path(string path) {
+
 }
 
 vector<string> split_string(string s) {

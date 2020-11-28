@@ -3,7 +3,17 @@
 
 using namespace std;
 
-void write_file(string file_contents, bool is_dir) {
+File::File() {this->is_dir=false;}
+
+File::File(string file_name, char file_start, Header first_header) {
+    File();
+    this->file_name = file_name;
+    this->file_start = file_start;
+    this->first_header = first_header;
+}
+
+
+void File::write(string file_contents) {
     int blocks_required = (file_contents.length() + 1) / (BLOCK_SIZE - 2) + 1;
     int blocks[blocks_required];
 
@@ -20,7 +30,7 @@ void write_file(string file_contents, bool is_dir) {
 
     Header headers[blocks_required];
     for(int i = 0; i < blocks_required; i++) {
-        headers[i].is_occupied = true; headers[i].is_dir = is_dir;
+        headers[i].is_occupied = true; headers[i].is_dir = false;
 
         headers[i].prev = i > 0 ? (char)blocks[i - 1] : 0;
         headers[i].next = i < blocks_required - 1 ? (char)blocks[i + 1] : 0;
