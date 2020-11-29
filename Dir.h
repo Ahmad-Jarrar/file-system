@@ -21,6 +21,9 @@ public:
     
     void list_contents();
 
+    void list_structure();
+    void list_structure(string);
+
     Entry entrify();    
 
     Entry find_entry(string);

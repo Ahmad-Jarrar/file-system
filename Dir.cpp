@@ -84,6 +84,39 @@ void Directory::list_contents() {
     }
 }
 
+void list_structure_helper(int block_no, bool first_block, string prefix) {
+    Entry entry;
+    for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
+        entry.read(entry_no, block_no);
+        if(entry.is_occupied) {
+            cout << prefix << '-' << entry.file_name;
+            if (entry.is_dir) {
+                cout << "/\n";
+                Directory dir(entry);
+                dir.list_structure(prefix+"\t");
+            }
+            else
+                cout << endl;
+        }
+    }
+}
+
+void Directory::list_structure(string prefix) {
+    Header header(&first_header);
+    
+    while (true) {
+        list_structure_helper(header.block_no, first_header.block_no == header.block_no, prefix);
+        if (header.next == 0)  
+            break;
+        header = new Header(header.next);
+    }
+}
+
+void Directory::list_structure() {
+    list_structure("");
+}
+
+
 Entry Directory::entrify() {
 
     return Entry(file_name, file_start, true, true);
@@ -126,8 +159,6 @@ void Directory::remove_entry(string file_name) {
     }
     
 }
-
-
 
 void Directory::clear() {
 

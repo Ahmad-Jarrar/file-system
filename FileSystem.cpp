@@ -3,12 +3,10 @@
 
 
 FileSystem::FileSystem(){
-
-
     initialize();
     Header root_header(0);
 	current_dir = *(new Directory(0, "/", true, root_header, Entry("/", 0, true, true)));
-
+    file_open = false;
 }
 
 void FileSystem::initialize() {
@@ -47,6 +45,42 @@ void FileSystem::mkdir(string dirname) {
 
     current_dir.add_entry(dirname, new_block, true, true);
 }
+
+void FileSystem::open(string file_name, string open_mode) {
+    try {
+        Entry entry = current_dir.find_entry(file_name);
+        if (!entry.is_dir) {
+            current_file = new File(entry);
+            file_open = true;
+            this->open_mode = open_mode;
+        }
+        else
+            cout << "File of name " << file_name << " not found";
+    }
+    catch (int err) {
+        cout << file_name << " not found";
+    }
+}
+
+void FileSystem::close() {
+    delete current_file;
+    file_open = false;
+}
+
+void FileSystem::read(int start, int size) {
+    if(file_open)
+        cout << current_file->read(start, size) << endl;
+    else
+        cout << "No file opened" << endl;
+}
+
+void FileSystem::write(string file_contents) {
+    if(file_open)
+        current_file->write(file_contents);
+    else
+        cout << "No file opened" << endl;
+}
+
 
 void FileSystem::pwd() {
     cout << current_dir.file_name << endl;
@@ -156,8 +190,11 @@ void FileSystem::map(string file_name) {
 void FileSystem::run(string command) {
     vector<string> tokens = split_string(command);
 
-    if (!tokens[0].compare("ls")) {
+    if (!tokens[0].compare("ls") && tokens.size() < 2) {
         ls();
+    }
+    else if (!tokens[0].compare("ls")  && !tokens[1].compare("-a")) {
+        current_dir.list_structure();
     }
     else if (!tokens[0].compare("mkdir")) {
         mkdir(tokens[1]);
@@ -185,5 +222,25 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("mkfile")) {
         mkfile(tokens[1]);
+    }
+    else if (!tokens[0].compare("open")) {
+        open(tokens[1], "");
+    }
+    else if (!tokens[0].compare("close")) {
+        close();
+    }
+    else if (!tokens[0].compare("read")) {
+        read(0,0);
+    }
+    else if (!tokens[0].compare("write")) {
+        if (!file_open)
+            cout << "No file open" << endl;
+        else {
+            string file_contents;
+            cout << "Enter contents of file:" << endl;
+    		getline(cin, file_contents);
+            write(file_contents);
+        }
+        
     }
 }

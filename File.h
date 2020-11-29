@@ -19,14 +19,15 @@ public:
 
     void open(string);
 
-    void read();
-    void read(int);
-    void read(int, int);
+    string read();
+    string read(int);
+    string read(int, int);
 
     void append(string);
     void append(string, int);
 
     void write(string);
+    void write(string, int, int);
     void write(string, bool is_new);
     
     // void create_file(string file_contents);

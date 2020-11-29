@@ -159,6 +159,15 @@ void write_block(Header header, string file_contents, char block_no, bool is_las
     file.close();
 }
 
+string read_block_contents(char block_no) {
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekg((((int)block_no) << 8) + 2);
+    char buffer[BLOCK_SIZE - 2];
+    
+    file.read(buffer, BLOCK_SIZE - 2);
+    return string(buffer);
+}
+
 int find_empty_block(int start_block = 0) {
     Header header;
     do {
@@ -174,6 +183,19 @@ Header find_last_header(Header first_header) {
     Header header(&first_header);
     while(header.next != 0)
         header.read(header.next);
+    return header;
+}
+
+Header find_header_no(Header header, int header_no) {
+    int count = 0;
+	while(true) {
+        if(header_no == count)
+            break;
+        if (header.next == 0)
+            throw(-1);      // required header not found
+        count++;
+        header.read(header.next);
+    }
     return header;
 }
 
@@ -215,7 +237,6 @@ bool is_empty_helper(int block_no, bool first_block) {
     return false;
 }
 
-
 void list_entry_helper(int block_no, bool first_block) {
     Entry entry;
     for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
@@ -240,6 +261,27 @@ void allocate_extra_block(Header first_header) {
 
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
+}
+
+void clear_subsequent_blocks(Header header) {
+    while(true) {
+        header.is_occupied = false;
+        header.write();
+        if(header.next == 0)
+            break;
+        header.read(header.next);
+    }
+}
+
+int count_blocks(Header header) {
+	int count = 0;
+	while(true) {
+        count++;
+        if(header.next == 0)
+            break;
+        header.read(header.next);
+    }
+    return count;
 }
 
 void delete_file(Entry entry) {

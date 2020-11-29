@@ -50,9 +50,13 @@ void write_file_entry(string file_name, char file_start, bool is_dir);
 
 void write_block(Header header, string file_contents, char block_no, bool is_last);
 
+string read_block_contents(char);
+
 int find_empty_block(int);
 
 Header find_last_header(Header);
+
+Header find_header_no(Header, int);
 
 Entry find_empty_entry_helper(int);
 
@@ -63,6 +67,10 @@ bool is_empty_helper(int, bool);
 void list_entry_helper(int, bool);
 
 void allocate_extra_block(Header);
+
+void clear_subsequent_blocks(Header);
+
+int count_blocks(Header);
 
 void delete_file(Entry);
 

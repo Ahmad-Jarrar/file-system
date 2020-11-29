@@ -29,10 +29,46 @@ void File::create() {
 }
 
 void File::write(string file_contents) {
+    write(file_contents, 0, file_contents.length());
+}
+
+void File::write(string file_contents, bool is_new) {
+    file_start = find_empty_block(0);
+    first_header.read(file_start);
+    write(file_contents);
+}
+
+void File::write(string file_contents, int start, int size) {
+    // determine which block no. is to be written to
+    // prepend relevant contents of that block to new contents
+    // unoccupy that and all subsequent blocks
+    // allocate and write to new blocks according to old strategy
+
+    int total_blocks = count_blocks(first_header);
+
+    // might need to modify this condition to check for position within last block
+    if (start > (total_blocks << 8) || start < 0) {
+        cout << "Invalid start address" << endl;
+        return;
+    }
+    
+    // obtain header that must be written to
+    int start_block_no = start / (BLOCK_SIZE - 2);
+    Header header(&first_header);
+    header = find_header_no(header, start_block_no);
+
+    // prepend contents of block to file_contents
+    string block_contents = read_block_contents(header.block_no);
+    file_contents = block_contents + file_contents;
+
+    // unoccupy subsequent blocks
+    clear_subsequent_blocks(header);
+
+    // employ old strategy
     int blocks_required = (file_contents.length() + 1) / (BLOCK_SIZE - 2) + 1;
     int blocks[blocks_required];
 
-    blocks[0] = find_empty_block(0);
+    blocks[0] = header.block_no;
     for(int i = 1; i < blocks_required; i++) {
         try {
             blocks[i] = find_empty_block(blocks[i - 1]);
@@ -47,15 +83,23 @@ void File::write(string file_contents) {
     for(int i = 0; i < blocks_required; i++) {
         headers[i].is_occupied = true; headers[i].is_dir = false;
 
-        headers[i].prev = i > 0 ? (char)blocks[i - 1] : 0;
+        headers[i].prev = i > 0 ? (char)blocks[i - 1] : header.prev;
         headers[i].next = i < blocks_required - 1 ? (char)blocks[i + 1] : 0;
 
         write_block(headers[i], file_contents.substr(i*(BLOCK_SIZE-2), BLOCK_SIZE-2), blocks[i], i == (blocks_required - 1));
     }
 }
 
-void File::write(string file_contents, bool is_new) {
-    file_start = find_empty_block(0);
-    first_header.read(file_start);
-    write(file_contents);
+string File::read(int start, int size) {
+    Header header(&first_header);
+    string file_contents = "";
+
+    while(true) {
+        string block_contents = read_block_contents(header.block_no);
+        file_contents += block_contents;
+        if(header.next == 0)
+            break;
+        header.read(header.next);
+    }
+    return file_contents;
 }
