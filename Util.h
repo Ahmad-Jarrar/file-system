@@ -44,8 +44,6 @@ public:
     void print();
 };
 
-void read_data();
-
 string trim(string& str);
 
 void write_file_entry(string file_name, char file_start, bool is_dir);
