@@ -56,7 +56,7 @@ Header find_last_header(Header);
 
 Entry find_empty_entry_helper(int);
 
-Entry search_entry_helper(int, string, bool, bool);
+Entry search_entry_helper(int, string, bool, bool, bool);
 
 bool is_empty_helper(int, bool);
 

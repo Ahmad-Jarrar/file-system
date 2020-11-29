@@ -11,8 +11,11 @@ public:
 
 
     File();
+    File(string);
     File(string, char, Header);
     File(Entry);
+
+    void create();
 
     void open(string);
 
@@ -24,6 +27,7 @@ public:
     void append(string, int);
 
     void write(string);
+    void write(string, bool is_new);
     
     // void create_file(string file_contents);
 

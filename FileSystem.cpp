@@ -46,7 +46,6 @@ void FileSystem::mkdir(string dirname) {
     dir.write();
 
     current_dir.add_entry(dirname, new_block, true, true);
-
 }
 
 void FileSystem::pwd() {
@@ -81,45 +80,68 @@ void FileSystem::rm(string file_name) {
 }
 
 void FileSystem::rm(string file_name, bool recursive) {
-    Entry entry;
-    try
-    {
-        entry = current_dir.find_entry(file_name);   
+    if (!file_name.compare("/")) {
+        cout << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN" << endl;
+        return;
     }
-    catch(int err)
-    {
-        cout << file_name << " not found" << endl;
-    }
+    try {
+        Entry entry = current_dir.find_entry(file_name);
+        if (entry.is_dir) {
+            Directory directory(entry);
 
-    if (entry.is_dir)
-    {
-        Directory directory(entry);
-
-        if (!directory.is_empty() && !recursive)
-        {
-            cout << "Directory not empty. Use -r flag to delete recursively" << endl;
-            return;
-        } else if (!directory.is_empty() && recursive) {
-            directory.clear();
+            if (!directory.is_empty() && !recursive) {
+                cout << "Directory not empty. Use -r flag to delete recursively" << endl;
+                return;
+            }
+            else
+                directory.clear();
         }
+        
+        delete_file(entry);
     }
-    
-    delete_file(entry);
+    catch(int err) {
+        cout << file_name << " not found" << endl;
+        return;
+    }
 }
 
 void FileSystem::mv(string source, string destination) {
     
 }
 
+void FileSystem::mkfile(string file_name) {
+    try {
+        current_dir.find_entry(file_name);
+        cout << "File already exists" << endl;
+    }
+    catch(int err) {
+        File file(file_name);
+        file.create();
+        current_dir.add_entry(file_name, file.file_start, false, true);
+    }
+}
+
 void FileSystem::stat_(string file_name) {
-    Entry entry = current_dir.find_entry(file_name);
-    if (entry.is_dir) {
-        Directory directory(entry);
-        if (directory.is_empty()) {
-            cout << "Directory is empty" << endl;
-        } else {
-            cout << "Directory is non-empty" << endl;
+
+    Entry entry;
+    try {
+        entry = current_dir.find_entry(file_name);
+        entry.print();
+            entry.print();
+        if (entry.is_dir) {
+            Directory directory(entry);
+            if (directory.is_empty())
+                cout << "Directory is empty" << endl;
+            else
+                cout << "Directory is non-empty" << endl;
         }
+        else
+            cout << "File exists" << endl;
+    }
+    catch(int err) {
+        cout << err;
+        cout << file_name << " not found" << endl;
+        return;
     }
 }
 
@@ -160,5 +182,8 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("view")) {
         view();
+    }
+    else if (!tokens[0].compare("mkfile")) {
+        mkfile(tokens[1]);
     }
 }

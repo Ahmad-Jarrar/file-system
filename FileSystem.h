@@ -14,7 +14,7 @@ public:
     void rm(string, bool);  // Done
     void stat_(string);     // Done
     void mv(string, string);// TODO
-    void create(string);    // TODO
+    void mkfile(string);    // TODO
     void open(string);      // TODO
     void append(string);    // TODO
     void pwd();             // DONE

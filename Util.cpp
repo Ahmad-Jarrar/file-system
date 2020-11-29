@@ -190,9 +190,9 @@ Entry find_empty_entry_helper(int block_no) {
     return entry;
 }
 
-Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool file_only) {
+Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool file_only, bool first_block) {
     Entry entry;
-    int entry_no = 0;
+    int entry_no = first_block ? 1 : 0;
     do {
         if (entry_no > 7)
             throw (entry_no);

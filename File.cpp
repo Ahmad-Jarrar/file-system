@@ -5,6 +5,11 @@ using namespace std;
 
 File::File() {this->is_dir=false;}
 
+File::File(string file_name) {
+    File();
+    this->file_name = file_name;
+}
+
 File::File(string file_name, char file_start, Header first_header) {
     File();
     this->file_name = file_name;
@@ -12,6 +17,16 @@ File::File(string file_name, char file_start, Header first_header) {
     this->first_header = first_header;
 }
 
+File::File(Entry entry) {
+    File();
+    this->file_name = entry.file_name;
+    this->file_start = entry.file_start;
+    this->first_header.read(this->file_start);
+}
+
+void File::create() {
+    write("", true);
+}
 
 void File::write(string file_contents) {
     int blocks_required = (file_contents.length() + 1) / (BLOCK_SIZE - 2) + 1;
@@ -37,4 +52,10 @@ void File::write(string file_contents) {
 
         write_block(headers[i], file_contents.substr(i*(BLOCK_SIZE-2), BLOCK_SIZE-2), blocks[i], i == (blocks_required - 1));
     }
+}
+
+void File::write(string file_contents, bool is_new) {
+    file_start = find_empty_block(0);
+    first_header.read(file_start);
+    write(file_contents);
 }

@@ -95,11 +95,11 @@ Entry Directory::find_entry(string name,bool dir_only, bool file_only) {
 
     while (true) {
         if (header.next == 0) {
-            return search_entry_helper(header.block_no, name, dir_only, file_only);
+            return search_entry_helper(header.block_no, name, dir_only, file_only, header.block_no==first_header.block_no);
         }
         else {
             try {
-                return search_entry_helper(header.block_no, name, dir_only, file_only);
+                return search_entry_helper(header.block_no, name, dir_only, file_only, header.block_no==first_header.block_no);
             }
             catch (int i) {
                 header = new Header(header.next);
@@ -107,6 +107,10 @@ Entry Directory::find_entry(string name,bool dir_only, bool file_only) {
         }
     }
 
+}
+
+Entry Directory::find_entry(string name) {
+    return find_entry(name, false, false);
 }
 
 void Directory::remove_entry(string file_name) {
@@ -155,10 +159,6 @@ void Directory::clear() {
         header.read(header.next);
     }
 
-}
-
-Entry Directory::find_entry(string name) {
-    return find_entry(name, false, false);
 }
 
 bool Directory::is_empty() {
