@@ -1,4 +1,4 @@
-#include "Dir.h"
+#include "memory_map.h"
 
 class FileSystem {
 public:
@@ -19,6 +19,8 @@ public:
     void append(string);    // TODO
     void pwd();             // DONE
     void initialize();      // DONE
+    void view();
+    void map(string);
 
 
     // void allocate_block(Directory);

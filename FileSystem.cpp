@@ -123,6 +123,14 @@ void FileSystem::stat_(string file_name) {
     }
 }
 
+void FileSystem::view() {
+    block_map();
+}
+
+void FileSystem::map(string file_name) {
+    show_memory_map(current_dir.find_entry(file_name));
+}
+
 void FileSystem::run(string command) {
     vector<string> tokens = split_string(command);
 
@@ -146,5 +154,11 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("stat")) {
         stat_(tokens[1]);
+    }
+    else if (!tokens[0].compare("map")) {
+        map(tokens[1]);
+    }
+    else if (!tokens[0].compare("view")) {
+        view();
     }
 }
