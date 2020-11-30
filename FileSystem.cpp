@@ -55,10 +55,10 @@ void FileSystem::open(string file_name, string open_mode) {
             this->open_mode = open_mode;
         }
         else
-            cout << "File of name " << file_name << " not found";
+            cout << "File of name " << file_name << " not found" << endl;
     }
     catch (int err) {
-        cout << file_name << " not found";
+        cout << file_name << " not found" << endl;
     }
 }
 
@@ -74,9 +74,9 @@ void FileSystem::read(int start, int size) {
         cout << "No file opened" << endl;
 }
 
-void FileSystem::write(string file_contents) {
+void FileSystem::write(string file_contents, int start) {
     if(file_open)
-        current_file->write(file_contents);
+        current_file->write(file_contents, start);
     else
         cout << "No file opened" << endl;
 }
@@ -233,14 +233,27 @@ void FileSystem::run(string command) {
         read(0,0);
     }
     else if (!tokens[0].compare("write")) {
-        if (!file_open)
+        if (!file_open) {
             cout << "No file open" << endl;
-        else {
-            string file_contents;
-            cout << "Enter contents of file:" << endl;
-    		getline(cin, file_contents);
-            write(file_contents);
+            return;
         }
-        
+        string file_contents;
+        cout << "Enter contents of file:" << endl;
+        getline(cin, file_contents);
+        int start, size;
+        if (tokens.size() == 1) {
+            start = size = 0;
+        }
+        else if (tokens.size() == 2) {
+            start = stoi(tokens[1]);
+            size = 0;
+        }
+        else if (tokens.size() == 3) {
+            start = stoi(tokens[1]);
+            size = stoi(tokens[2]);
+            file_contents = file_contents.substr(0, size);
+        }
+
+        write(file_contents, start);
     }
 }

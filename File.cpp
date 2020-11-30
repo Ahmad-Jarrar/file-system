@@ -25,24 +25,22 @@ File::File(Entry entry) {
 }
 
 void File::create() {
-    write("", true);
+    file_start = find_empty_block(0);
+    first_header.read(file_start);
+    write("");
 }
 
 void File::write(string file_contents) {
-    write(file_contents, 0, file_contents.length());
+    write(file_contents, 0);
 }
 
-void File::write(string file_contents, bool is_new) {
-    file_start = find_empty_block(0);
-    first_header.read(file_start);
-    write(file_contents);
-}
-
-void File::write(string file_contents, int start, int size) {
+void File::write(string file_contents, int start) {
     // determine which block no. is to be written to
     // prepend relevant contents of that block to new contents
     // unoccupy that and all subsequent blocks
     // allocate and write to new blocks according to old strategy
+
+    file_contents = escape(file_contents);
 
     int total_blocks = count_blocks(first_header);
 
@@ -59,7 +57,9 @@ void File::write(string file_contents, int start, int size) {
 
     // prepend contents of block to file_contents
     string block_contents = read_block_contents(header.block_no);
-    file_contents = block_contents + file_contents;
+
+    if(block_contents.length() > 0)
+        file_contents = block_contents.substr(0, start - (start_block_no<<8)) + file_contents;
 
     // unoccupy subsequent blocks
     clear_subsequent_blocks(header);
@@ -88,6 +88,7 @@ void File::write(string file_contents, int start, int size) {
 
         write_block(headers[i], file_contents.substr(i*(BLOCK_SIZE-2), BLOCK_SIZE-2), blocks[i], i == (blocks_required - 1));
     }
+    first_header.read(first_header.block_no);
 }
 
 string File::read(int start, int size) {
@@ -95,6 +96,7 @@ string File::read(int start, int size) {
     string file_contents = "";
 
     while(true) {
+        // header.print();
         string block_contents = read_block_contents(header.block_no);
         file_contents += block_contents;
         if(header.next == 0)

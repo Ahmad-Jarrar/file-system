@@ -29,7 +29,7 @@ public:
     void open(string, string);      // done
     void close();           // done
     void read(int start, int size);
-    void write(string);
+    void write(string, int);
 
     void append(string);    // TODO
 

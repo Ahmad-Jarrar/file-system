@@ -149,6 +149,37 @@ string trim(string& str) {
     return str.substr(strBegin, strRange);
 }
 
+void replaceAll(std::string& str, const std::string& from, const std::string& to) {
+
+}
+
+string escape(string str) {
+    string to = "";
+    size_t start_pos = 0;
+    while((start_pos = str.find('\\', start_pos)) != std::string::npos) {
+        switch (str[start_pos+1])
+        {
+            case 'n':
+                to = "\n";
+                break;
+            case '\\':
+                to = "\\";
+                break;
+            case '\'':
+                to = "\'";
+                break;
+            case 't':
+                to = "\t";
+                break;
+            default:
+                break;
+        }
+        str.replace(start_pos, 2, to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+    return str;
+}
+
 void write_block(Header header, string file_contents, char block_no, bool is_last) {
     header.write(block_no);
 

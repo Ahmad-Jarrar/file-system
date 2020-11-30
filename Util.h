@@ -46,6 +46,8 @@ public:
 
 string trim(string& str);
 
+string escape(string str);
+
 void write_file_entry(string file_name, char file_start, bool is_dir);
 
 void write_block(Header header, string file_contents, char block_no, bool is_last);
