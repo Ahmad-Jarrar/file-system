@@ -108,11 +108,27 @@ string File::read(int start, int size) {
     return file_contents.substr(0, size);
 }
 
+string File::read(int start) {
+    return read(start, MAX_INT);
+}
+
 void File::truncate(int max_size) {
     write("", max_size);
 }
 
 void File::move_within_file(int start, int size, int target) {
-    string move_string = read(start, size);
-    write(move_string, target);
+    string file_contents = read(0);
+    string move_string = file_contents.substr(start, size);
+
+    if(target > file_contents.length()-1) {
+        file_contents+=move_string;
+    }
+    else if(move_string.length() > file_contents.length()-1-target){
+        file_contents = file_contents.substr(0, target) + move_string;
+    }
+    else {
+        file_contents.replace(target, move_string.length(), move_string);
+    }
+
+    write(file_contents, 0);
 }
