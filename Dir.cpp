@@ -21,6 +21,7 @@ Directory::Directory(Entry entry) {
 }
 
 void Directory::write() {
+    clean_block(first_header.block_no);
     first_header.write(first_header.block_no);
     add_entry(parent_dir);
 }

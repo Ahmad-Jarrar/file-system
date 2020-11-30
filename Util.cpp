@@ -190,9 +190,9 @@ void write_block(Header header, string file_contents, char block_no, bool is_las
     file.close();
 }
 
-string read_block_contents(char block_no) {
+string read_block_contents(char block_no, char start) {
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekg((((int)block_no) << 8) + 2);
+    file.seekg((((int)block_no) << 8) + 2 + start);
     char buffer[BLOCK_SIZE - 2];
     
     file.read(buffer, BLOCK_SIZE - 2);
@@ -286,12 +286,22 @@ void allocate_extra_block(Header first_header) {
 	int new_block_no = find_empty_block(0);
 	Header last_header = find_last_header(first_header);
 	
+    clean_block(new_block_no);
 	last_header.next = new_block_no;
 	last_header.write(last_header.block_no);
     last_header.read(last_header.block_no);
 
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
+}
+
+void clean_block(char block_no) {
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp((((int)block_no) << 8));
+    
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        file << '\0';
+    file.close();
 }
 
 void clear_subsequent_blocks(Header header) {

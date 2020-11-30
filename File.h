@@ -19,16 +19,17 @@ public:
 
     void open(string);
 
+    void write(string);
+    void write(string, int);
+    void write(string, bool is_new);
+    
     string read();
     string read(int);
     string read(int, int);
 
-    void append(string);
-    void append(string, int);
+    void truncate(int);
 
-    void write(string);
-    void write(string, int);
-    void write(string, bool is_new);
+    void move_within_file(int, int, int);
     
     // void create_file(string file_contents);
 

@@ -230,7 +230,25 @@ void FileSystem::run(string command) {
         close();
     }
     else if (!tokens[0].compare("read")) {
-        read(0,0);
+        if (!file_open) {
+            cout << "No file open" << endl;
+            return;
+        }
+        int start, size;
+        if (tokens.size() == 1) {
+            start = 0;
+            size = MAX_INT;
+        }
+        else if (tokens.size() == 2) {
+            start = stoi(tokens[1]);
+            size = MAX_INT;
+        }
+        else if (tokens.size() == 3) {
+            start = stoi(tokens[1]);
+            size = stoi(tokens[2]);
+        }
+        
+        read(start, size);
     }
     else if (!tokens[0].compare("write")) {
         if (!file_open) {
@@ -255,5 +273,19 @@ void FileSystem::run(string command) {
         }
 
         write(file_contents, start);
+    }
+    else if (!tokens[0].compare("trnc")) {
+        if (!file_open) {
+            cout << "No file open" << endl;
+            return;
+        }
+        current_file->truncate(stoi(tokens[1]));
+    }
+    else if (!tokens[0].compare("mvwf")) {
+        if (!file_open) {
+            cout << "No file open" << endl;
+            return;
+        }
+        current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
     }
 }

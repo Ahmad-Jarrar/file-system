@@ -56,7 +56,7 @@ void File::write(string file_contents, int start) {
     header = find_header_no(header, start_block_no);
 
     // prepend contents of block to file_contents
-    string block_contents = read_block_contents(header.block_no);
+    string block_contents = read_block_contents(header.block_no, 0);
 
     if(block_contents.length() > 0)
         file_contents = block_contents.substr(0, start - (start_block_no<<8)) + file_contents;
@@ -92,16 +92,27 @@ void File::write(string file_contents, int start) {
 }
 
 string File::read(int start, int size) {
+    int start_block_no = start / (BLOCK_SIZE - 2);
     Header header(&first_header);
+    header = find_header_no(header, start_block_no);
     string file_contents = "";
 
-    while(true) {
+    while(file_contents.length() < size) {
         // header.print();
-        string block_contents = read_block_contents(header.block_no);
+        string block_contents = read_block_contents(header.block_no, header.prev == 0 ? start - (start_block_no<<8) : 0);
         file_contents += block_contents;
         if(header.next == 0)
             break;
         header.read(header.next);
     }
-    return file_contents;
+    return file_contents.substr(0, size);
+}
+
+void File::truncate(int max_size) {
+    write("", max_size);
+}
+
+void File::move_within_file(int start, int size, int target) {
+    string move_string = read(start, size);
+    write(move_string, target);
 }

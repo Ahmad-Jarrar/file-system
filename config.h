@@ -7,3 +7,4 @@
 #define H_NEXT_MASK 0x003F
 #define IS_DIR      0x0040
 #define IS_OCCUPIED 0x0080
+#define MAX_INT 16385

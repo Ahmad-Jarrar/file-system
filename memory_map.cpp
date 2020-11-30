@@ -46,5 +46,5 @@ void show_memory_map(Entry entry) {
         cout << "      \\/      " << endl;
         first_header.read(first_header.next);
     }
-    cout << "=====Start=====" << endl;
+    cout << "=====End=====" << endl;
 }
