@@ -99,11 +99,16 @@ void list_structure_helper(int block_no, bool first_block, string prefix) {
     for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
         entry.read(entry_no, block_no);
         if(entry.is_occupied) {
-            cout << prefix << '-' << entry.file_name;
+            if (entry.is_dir)
+                cout << prefix << '+' << entry.file_name;
+            else
+                cout << prefix << '*' << entry.file_name;
             if (entry.is_dir) {
                 cout << "/\n";
                 Directory dir(entry);
-                dir.list_structure(prefix+"\t");
+                if (prefix.length() > 0)
+                    prefix.replace(prefix.length()-8, 8,"        ");
+                dir.list_structure(prefix+"|--------");
             }
             else
                 cout << endl;
@@ -217,6 +222,6 @@ bool Directory::is_empty() {
 
 
 void Directory::print() {
-    cout << endl << "===Dir info beg===\n"<< "Block no.: " << (int)file_start << " Parent: " << parent_dir.file_name << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << "\n===Dir info end===\n";
+    cout << endl << "===Dir info===\n"<< "Block no.: " << (int)file_start << " Parent: " << parent_dir.file_name << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << "\n======\n";
 }
 

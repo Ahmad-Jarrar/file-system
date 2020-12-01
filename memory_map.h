@@ -2,6 +2,6 @@
 
 void block_map();
 
-void show_all_files();
+void disk_usage();
 
 void show_memory_map(Entry);

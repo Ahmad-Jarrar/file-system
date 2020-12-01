@@ -78,6 +78,6 @@ int count_blocks(Header);
 
 void delete_file(Entry);
 
-void parse_path(string);
+void print_manual();
 
 vector<string> split_string(string, char);

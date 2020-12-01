@@ -30,20 +30,28 @@ void FileSystem::initialize() {
 }
 
 
-void FileSystem::mkdir(string dirname) {
+void FileSystem::mkdir(string file_name) {
 
-    if (dirname.length() > 30) 
+    if (file_name.length() > 30) 
     {
         cout << "File names cannot exceed 30 Characters!" << endl;
         return;
     }
 
-    char new_block = (char)find_empty_block(0);
-    Header header(new_block, 0, 0, true, true);
-    Directory dir(new_block, dirname, true, header, current_dir.entrify());
-    dir.write();
+    try {
+        current_dir.find_entry(file_name);
+        cout << "Folder already exists" << endl;
+    }
+    catch(int err) {
+        char new_block = (char)find_empty_block(0);
+        Header header(new_block, 0, 0, true, true);
+        Directory dir(new_block, file_name, true, header, current_dir.entrify());
+        dir.write();
 
-    current_dir.add_entry(dirname, new_block, true, true);
+        current_dir.add_entry(file_name, new_block, true, true);
+    }
+
+    
 }
 
 void FileSystem::open(string file_name, string open_mode) {
@@ -145,10 +153,36 @@ void FileSystem::rm(string file_name, bool recursive) {
 }
 
 void FileSystem::mv(string source, string destination) {
+
+    Directory source_dir;
+    Directory dest_dir;
+
     vector<string> source_path = split_string(source, '/');
     vector<string> dest_path = split_string(destination, '/');
 
-    Directory source_dir = Directory(&current_dir);
+    if (source[0] == '/')
+    {
+        source_dir = Directory(Entry("/", 0, true, true));
+        source_path[0] = "..";
+    }
+    else
+    {
+        source_dir = Directory(&current_dir);
+    }
+    
+
+    if (destination[0] == '/')
+    {
+        dest_dir = Directory(Entry("/", 0, true, true));
+        dest_path[0] = "..";
+    }
+    else
+    {
+        dest_dir = Directory(&current_dir);
+    }
+    
+    
+
     for(int i = 0; i < source_path.size()-1; i++) {
         try {
             source_dir = cd(source_path[i], source_dir);
@@ -158,7 +192,6 @@ void FileSystem::mv(string source, string destination) {
         }
     }
 
-    Directory dest_dir = Directory(&current_dir);
     for(int i = 0; i < dest_path.size()-1; i++) {
         try{
             dest_dir = cd(dest_path[i], dest_dir);
@@ -211,7 +244,13 @@ void FileSystem::stat_(string file_name) {
 }
 
 void FileSystem::view() {
+    disk_usage();
+    cout << endl << endl;
     block_map();
+}
+
+void FileSystem::man() {
+    print_manual();
 }
 
 void FileSystem::map(string file_name) {
@@ -268,6 +307,9 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("view")) {
         view();
     }
+    else if (!tokens[0].compare("man")) {
+        man();
+    }
     else if (!tokens[0].compare("mkfile")) {
         mkfile(tokens[1]);
     }
@@ -322,7 +364,7 @@ void FileSystem::run(string command) {
 
         write(file_contents, start);
     }
-    else if (!tokens[0].compare("trnc")) {
+    else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
             cout << "No file open" << endl;
             return;

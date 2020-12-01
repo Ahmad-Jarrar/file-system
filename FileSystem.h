@@ -22,6 +22,7 @@ public:
     void pwd();             // done
     void view();
     void map(string);
+    void man();
 
     void stat_(string);     // Done
     

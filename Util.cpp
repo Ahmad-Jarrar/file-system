@@ -58,9 +58,23 @@ void Header::read(int block_no) {
 }
 
 void Header::print() {
-	cout << endl << "===Header info beg===\n"<< "Block no.: " << (int)block_no << endl << "Prev: "
-        << (int)prev << endl << "Next: " << (int)next << endl << "is_dir: " << is_dir 
-        << " is_occupied: " << is_occupied << "\n===Header info end===\n";
+
+    char block_no_str[3];
+    char block_address_str[5];
+    char next_str[3];
+    char prev_str[3];
+
+    sprintf(block_no_str, "%2d", (int)block_no);
+    sprintf(block_address_str, "%4x", (((int)block_no) << 8));
+    sprintf(next_str, "%2d", (int)next);
+    sprintf(prev_str, "%2d", (int)prev);
+
+	cout << endl << "==========Header  info==========\n"
+                 << "|Block no.: " << block_no_str << "                 |" << endl 
+                 << "|Block Address: " << block_address_str << "           |" << endl 
+                 << "|Prev Block: " << prev_str << " Next Block: " << next_str << " |" << endl
+                 << "|is_dir: " << is_dir << " is_occupied: " << is_occupied << "      |"
+                 << "\n================================\n";
 }
 
 /*=========================================================================================================================
@@ -118,9 +132,9 @@ void Entry::stringify() {
 }
 
 void Entry::print() {
-	cout << endl << "===Entry info beg===\n"<< "Block no.: " << (int)block_no << " Entry no.: "
+	cout << endl << "===Entry info===\n"<< "Block no.: " << (int)block_no << " Entry no.: "
         << (int)entry_no << endl << "File name: " << file_name << endl << "is_dir: " << is_dir
-        << " is_occupied: " << is_occupied << "\n===Entry info end===\n";
+        << " is_occupied: " << is_occupied << "\n======\n";
 }
 
 
@@ -338,10 +352,6 @@ void delete_file(Entry entry) {
     entry.clear();
 }
 
-void parse_path(string path) {
-
-}
-
 vector<string> split_string(string s, char delimiter)
 {
    vector<string> tokens;
@@ -352,4 +362,29 @@ vector<string> split_string(string s, char delimiter)
       tokens.push_back(token);
    }
    return tokens;
+}
+
+
+void print_manual() {
+    cout << "__________________________________________________________________________________________________________________________" << endl;
+    cout << "                                                  Manual for File System" << endl;
+    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "Command" << "\t\tOpt Flags" << "\tUsage" << "\t\t\tDescription" << endl << endl;
+
+    cout << "ls" << "\t\t-a" << "\t\tls [flags]" << "\t\tLists The files and folders in current directory.\n\t\t\t\t\t\t\tUse \'-a\' to view all sub dirs." << endl;
+    cout << "mkdir" << "\t\t" << "\t\tmkdir [name]" << "\t\tCreates a folder in the current directory." << endl;
+    cout << "mkfile" << "\t\t" << "\t\tmkfile [name]" << "\t\tCreates a file in the current directory." << endl;
+    cout << "view" << "\t\t" << "\t\tview" << "\t\t\tView Stats of the File System." << endl;
+    cout << "cd" << "\t\t" << "\t\tcd [destination]" << "\tChange current directory." << endl;
+    cout << "rm" << "\t\t-r" << "\t\trm [flag] [name]" << "\tRemove File/folder from current directory.\n\t\t\t\t\t\t\tUse \'-r\' to delete recursively." << endl;
+    cout << "mv" << "\t\t" << "\t\tmv [source] [dest]" << "\tMove File/Folder from source to destination." << endl;
+    cout << "pwd" << "\t\t" << "\t\tpwd" << "\t\t\tPrint present working directory." << endl;
+    cout << "map" << "\t\t" << "\t\tmap" << "\t\t\tShow which blocks in memory a file/folder occupies." << endl;
+    cout << "open" << "\t\t" << "\t\topen [file_name]" << "\tOpen file to read/write." << endl;
+    cout << "close" << "\t\t" << "\t\tclose [file_name]" << "\tClose currently open file." << endl;
+    cout << "read" << "\t\t[start] [size]" << "\tread [flags]" << "\t\tRead entire opened file.\n\t\t\t\t\t\t\tUse options to read from an offset or limit file size." << endl;
+    cout << "write" << "\t\t[start] [size]" << "\twrite [start] [size]" << "\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t\t\tUse options to modify existing file content." << endl;
+    cout << "trunc" << "\t\t" << "\t\ttrunc [size]" << "\t\tTruncate opened file to size." << endl;
+
+    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
 }
