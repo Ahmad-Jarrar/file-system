@@ -80,4 +80,4 @@ void delete_file(Entry);
 
 void parse_path(string);
 
-vector<string> split_string(string);
+vector<string> split_string(string, char);

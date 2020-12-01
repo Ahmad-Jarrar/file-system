@@ -342,9 +342,14 @@ void parse_path(string path) {
 
 }
 
-vector<string> split_string(string s) {
-	stringstream ss(s);
-	istream_iterator<string> begin(ss);
-	istream_iterator<string> end;
-	return vector<string>(begin, end);
+vector<string> split_string(string s, char delimiter)
+{
+   vector<string> tokens;
+   string token;
+   istringstream tokenStream(s);
+   while (getline(tokenStream, token, delimiter))
+   {
+      tokens.push_back(token);
+   }
+   return tokens;
 }

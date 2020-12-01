@@ -14,7 +14,7 @@ public:
     void run(string);
 
     void mkdir(string);     // Done
-    void cd(string);        // Done
+    Directory cd(string, Directory);        // Done
     void ls();              // Done
     void rm(string);        // Done
     void rm(string, bool);  // Done
@@ -30,10 +30,4 @@ public:
     void close();           // done
     void read(int start, int size);
     void write(string, int);
-
-    void append(string);    // TODO
-
-
-    // void allocate_block(Directory);
-    void free_block(char);
 };

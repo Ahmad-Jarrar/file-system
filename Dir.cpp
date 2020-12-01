@@ -20,6 +20,15 @@ Directory::Directory(Entry entry) {
     this->parent_dir = parent;
 }
 
+Directory::Directory(Directory* directory) {
+    this->file_start = directory->file_start;
+    this->file_name = directory->file_name;
+    this->is_dir = directory->is_dir;
+    this->total_blocks = directory->total_blocks;
+    this->first_header = directory->first_header;
+    this->parent_dir = directory->parent_dir;
+}
+
 void Directory::write() {
     clean_block(first_header.block_no);
     first_header.write(first_header.block_no);

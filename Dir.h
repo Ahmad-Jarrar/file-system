@@ -12,6 +12,7 @@ public:
     Directory() {}
     Directory(char, string, bool, Header, Entry);
     Directory(Entry);
+    Directory(Directory*);
     // void create_file(string file_contents);
 
     Entry find_empty_entry();

@@ -47,6 +47,10 @@ void FileSystem::mkdir(string dirname) {
 }
 
 void FileSystem::open(string file_name, string open_mode) {
+    if(file_open) {
+        cout << "A file is already open. Close it to open new file" << endl;
+        return;
+    }
     try {
         Entry entry = current_dir.find_entry(file_name);
         if (!entry.is_dir) {
@@ -63,8 +67,10 @@ void FileSystem::open(string file_name, string open_mode) {
 }
 
 void FileSystem::close() {
-    delete current_file;
-    file_open = false;
+    if(file_open) {
+        delete current_file;
+        file_open = false;
+    }
 }
 
 void FileSystem::read(int start, int size) {
@@ -86,21 +92,20 @@ void FileSystem::pwd() {
     cout << current_dir.file_name << endl;
 }
 
-void FileSystem::cd(string dir_name){
+Directory FileSystem::cd(string dir_name, Directory dir){
     Entry entry;
 
     if (!dir_name.compare("..")) {
-        current_dir = current_dir.parent_dir;
-        return;
+        return dir.parent_dir;
     }
     
     try {
-        entry = current_dir.find_entry(dir_name, true, false);
-        Directory child_dir(entry);
-        current_dir = child_dir;
+        entry = dir.find_entry(dir_name, true, false);
+        return Directory(entry);
     }
     catch(int err) {
         cout << dir_name << " does not exist" << endl;
+        throw(-1);
     }
     
 }
@@ -140,7 +145,33 @@ void FileSystem::rm(string file_name, bool recursive) {
 }
 
 void FileSystem::mv(string source, string destination) {
-    
+    vector<string> source_path = split_string(source, '/');
+    vector<string> dest_path = split_string(destination, '/');
+
+    Directory source_dir = Directory(&current_dir);
+    for(int i = 0; i < source_path.size()-1; i++) {
+        try {
+            source_dir = cd(source_path[i], source_dir);
+        }
+        catch(int i) {
+            return;
+        }
+    }
+
+    Directory dest_dir = Directory(&current_dir);
+    for(int i = 0; i < dest_path.size()-1; i++) {
+        try{
+            dest_dir = cd(dest_path[i], dest_dir);
+        }
+        catch(int i) {
+            return;
+        }
+    }
+
+    Entry entry = source_dir.find_entry(source_path[source_path.size() - 1]);
+    entry.clear();  entry.is_occupied = true;
+    entry.file_name = dest_path[dest_path.size()-1];
+    dest_dir.add_entry(entry);
 }
 
 void FileSystem::mkfile(string file_name) {
@@ -188,7 +219,7 @@ void FileSystem::map(string file_name) {
 }
 
 void FileSystem::run(string command) {
-    vector<string> tokens = split_string(command);
+    vector<string> tokens = split_string(command, ' ');
 
     if (!tokens[0].compare("ls") && tokens.size() < 2) {
         ls();
@@ -206,7 +237,24 @@ void FileSystem::run(string command) {
         rm(tokens[1]);
     }
     else if (!tokens[0].compare("cd")) {
-        cd(tokens[1]);
+        try {
+            Directory curr_dir = Directory(&current_dir);
+            vector<string> path = split_string(tokens[1], '/');
+
+            if (tokens[1][0] == '/') {
+                while(curr_dir.parent_dir.file_name != "/")
+                    curr_dir = curr_dir.parent_dir;
+                path[0] = "..";
+            }
+
+            for(int i = 0; i < path.size(); i++) {
+                curr_dir = cd(path[i], curr_dir);
+            }
+            current_dir = curr_dir;
+        }
+        catch(int i) {
+            return;
+        }
     }
     else if (!tokens[0].compare("pwd")) {
         pwd();
@@ -287,5 +335,8 @@ void FileSystem::run(string command) {
             return;
         }
         current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
+    }
+    else if (!tokens[0].compare("mv")) {
+        mv(tokens[1], tokens[2]);
     }
 }
