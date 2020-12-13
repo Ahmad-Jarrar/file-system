@@ -31,13 +31,4 @@ public:
 
     void move_within_file(int, int, int);
     
-    // void create_file(string file_contents);
-
-    /* TODO:
-        - MOVE
-        - MOVE-WITHIN-FILE
-        - APPEND
-        - DELETE
-        - COPY
-    */
 };

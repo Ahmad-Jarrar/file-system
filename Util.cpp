@@ -260,12 +260,15 @@ Entry find_empty_entry_helper(int block_no) {
 Entry search_entry_helper(int block_no, string file_name, bool dir_only, bool file_only, bool first_block) {
     Entry entry;
     int entry_no = first_block ? 1 : 0;
-    do {
+    while(true) {
         if (entry_no > 7)
             throw (entry_no);
         entry.read(entry_no, block_no);
         ++entry_no;
-    } while(entry.file_name.compare(file_name) || (dir_only ? !entry.is_dir : false) || (file_only ? entry.is_dir : false));
+        if(!(entry.file_name.compare(file_name) || (dir_only ? !entry.is_dir : false) || (file_only ? entry.is_dir : false))
+            && entry.is_occupied)
+            break;
+    } 
     entry.read(entry_no-1);
     return entry;
 }
@@ -381,10 +384,12 @@ void print_manual() {
     cout << "pwd" << "\t\t" << "\t\tpwd" << "\t\t\tPrint present working directory." << endl;
     cout << "map" << "\t\t" << "\t\tmap" << "\t\t\tShow which blocks in memory a file/folder occupies." << endl;
     cout << "open" << "\t\t" << "\t\topen [file_name]" << "\tOpen file to read/write." << endl;
-    cout << "close" << "\t\t" << "\t\tclose [file_name]" << "\tClose currently open file." << endl;
+    cout << "close" << "\t\t" << "\t\tclose" << "\t\t\tClose currently open file." << endl;
     cout << "read" << "\t\t[start] [size]" << "\tread [flags]" << "\t\tRead entire opened file.\n\t\t\t\t\t\t\tUse options to read from an offset or limit file size." << endl;
-    cout << "write" << "\t\t[start] [size]" << "\twrite [start] [size]" << "\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t\t\tUse options to modify existing file content." << endl;
+    cout << "write" << "\t\t[start] [size] -s [content]" << "\twrite [start] [size] [options] [content]" << "\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t\t\tUse options to modify existing file content." << endl;
+    cout << "append" << "\t\t -s [contents]" << "\tappend [flags] [content]" << "\tWrite to opened file. It writes to the end of existing file." << endl;
     cout << "trunc" << "\t\t" << "\t\ttrunc [size]" << "\t\tTruncate opened file to size." << endl;
+    cout << "man" << "\t\t" << "\t\tman" << "\t\t\tOpen Manual" << endl;
 
     cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
 }

@@ -5,13 +5,13 @@ public:
     Directory current_dir;
     File* current_file;
     bool file_open;
-    string open_mode;
 
     FileSystem();
 
     void initialize();      // done
 
     void run(string);
+    void run_script(string);
 
     void mkdir(string);     // Done
     Directory cd(string, Directory);        // Done
@@ -27,8 +27,9 @@ public:
     void stat_(string);     // Done
     
     void mkfile(string);    // Done
-    void open(string, string);      // done
+    void open(string);      // done
     void close();           // done
     void read(int start, int size);
     void write(string, int);
+    void append(string);
 };

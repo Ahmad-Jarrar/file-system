@@ -54,7 +54,7 @@ void FileSystem::mkdir(string file_name) {
     
 }
 
-void FileSystem::open(string file_name, string open_mode) {
+void FileSystem::open(string file_name) {
     if(file_open) {
         cout << "A file is already open. Close it to open new file" << endl;
         return;
@@ -64,7 +64,6 @@ void FileSystem::open(string file_name, string open_mode) {
         if (!entry.is_dir) {
             current_file = new File(entry);
             file_open = true;
-            this->open_mode = open_mode;
         }
         else
             cout << "File of name " << file_name << " not found" << endl;
@@ -95,6 +94,12 @@ void FileSystem::write(string file_contents, int start) {
         cout << "No file opened" << endl;
 }
 
+void FileSystem::append(string file_contents) {
+    if(file_open)
+        current_file->write(file_contents, (int)current_file->read().length());
+    else
+        cout << "No file opened" << endl;
+}
 
 void FileSystem::pwd() {
     cout << current_dir.file_name << endl;
@@ -313,8 +318,8 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("mkfile")) {
         mkfile(tokens[1]);
     }
-    else if (!tokens[0].compare("open")) {
-        open(tokens[1], "");
+    else if (!tokens[0].compare("open") && tokens.size() > 1) {
+        open(tokens[1]);
     }
     else if (!tokens[0].compare("close")) {
         close();
@@ -346,23 +351,56 @@ void FileSystem::run(string command) {
             return;
         }
         string file_contents;
-        cout << "Enter contents of file:" << endl;
-        getline(cin, file_contents);
-        int start, size;
+        
+        int start;
         if (tokens.size() == 1) {
-            start = size = 0;
+            start = 0;
+            cout << "Enter contents of file:" << endl;
+            getline(cin, file_contents);
         }
         else if (tokens.size() == 2) {
             start = stoi(tokens[1]);
-            size = 0;
+            cout << "Enter contents of file:" << endl;
+            getline(cin, file_contents);
         }
-        else if (tokens.size() == 3) {
-            start = stoi(tokens[1]);
-            size = stoi(tokens[2]);
-            file_contents = file_contents.substr(0, size);
+        else if (tokens.size() >= 3) {
+            if (!tokens[1].compare("-s")) {
+                file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
+            }
+            else if (!tokens[2].compare("-s")) {
+                start = stoi(tokens[1]);
+                file_contents = command.substr(tokens[0].size()+tokens[1].size()+tokens[2].size()+3);
+            }
+            else {
+                cout << "Invalid Arguments" << endl;
+                return;
+            }
         }
 
         write(file_contents, start);
+    }
+    else if (!tokens[0].compare("append")) {
+        if (!file_open) {
+            cout << "No file open" << endl;
+            return;
+        }
+        string file_contents;
+
+        if (tokens.size() == 1) {
+            cout << "Enter contents of file:" << endl;
+            getline(cin, file_contents);
+        }
+        else if (tokens.size() >= 2) {
+            if (!tokens[1].compare("-s")) {
+                file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
+            }
+            else {
+                cout << "Invalid Arguments" << endl;
+                return;
+            }
+        }
+
+        append(file_contents);
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
@@ -381,4 +419,17 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("mv")) {
         mv(tokens[1], tokens[2]);
     }
+}
+
+void FileSystem::run_script(string file_name) {
+    // while(true) {
+	// 	string command;
+	// 	fopen
+	// 	getline(cin, command);
+	// 	if (!command.compare("exit"))
+	// 		exit(-1);
+	// 	else {
+	// 		file_system.run(command);
+	// 	}
+	// }
 }

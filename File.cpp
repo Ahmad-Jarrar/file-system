@@ -107,6 +107,9 @@ string File::read(int start, int size) {
     }
     return file_contents.substr(0, size);
 }
+string File::read() {
+    return read(0, MAX_INT);
+}
 
 string File::read(int start) {
     return read(start, MAX_INT);
