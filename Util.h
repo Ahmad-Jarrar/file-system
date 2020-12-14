@@ -20,7 +20,7 @@ public:
 	Header(Header*);
 	Header(char, char, char, bool, bool);
 	Header(int);
-	void print();
+	string stringify();
 	void write(int);
 	void write();
 	void read(int);
@@ -66,7 +66,7 @@ Entry search_entry_helper(int, string, bool, bool, bool);
 
 bool is_empty_helper(int, bool);
 
-void list_entry_helper(int, bool);
+string list_entry_helper(int, bool);
 
 void allocate_extra_block(Header);
 
@@ -78,6 +78,6 @@ int count_blocks(Header);
 
 void delete_file(Entry);
 
-void print_manual();
+string get_manual();
 
 vector<string> split_string(string, char);

@@ -1,7 +1,7 @@
 #include "File.h"
 
-void block_map();
+string block_map();
 
-void disk_usage();
+string disk_usage();
 
-void show_memory_map(Entry);
+string show_memory_map(Entry);

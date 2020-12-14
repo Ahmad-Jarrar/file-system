@@ -46,8 +46,7 @@ void File::write(string file_contents, int start) {
 
     // might need to modify this condition to check for position within last block
     if (start > (total_blocks << 8) || start < 0) {
-        cout << "Invalid start address" << endl;
-        return;
+        throw("Invalid start address");
     }
     
     // obtain header that must be written to
@@ -74,7 +73,7 @@ void File::write(string file_contents, int start) {
             blocks[i] = find_empty_block(blocks[i - 1]);
         }
         catch(int err) {
-            cout << "Not enough free space!" << endl;
+            throw("Not enough free space!");
             return;
         }
     }

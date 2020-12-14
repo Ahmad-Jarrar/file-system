@@ -5,13 +5,14 @@ public:
     Directory current_dir;
     File* current_file;
     bool file_open;
+    ostream* out_stream;
 
     FileSystem();
 
     void initialize();      // done
 
     void run(string);
-    void run_script(string);
+    void run_script(ifstream&);
 
     void mkdir(string);     // Done
     Directory cd(string, Directory);        // Done
@@ -33,3 +34,5 @@ public:
     void write(string, int);
     void append(string);
 };
+
+void thread_wrapper(FileSystem, string);

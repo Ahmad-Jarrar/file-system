@@ -4,3 +4,4 @@ test.cpp
 *.dat
 *.sh
 .vscode/
+out_*

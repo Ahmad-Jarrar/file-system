@@ -20,10 +20,10 @@ public:
     void add_entry(string, char, bool, bool);
     void add_entry(Entry);
     
-    void list_contents();
+    string list_contents();
 
-    void list_structure();
-    void list_structure(string);
+    string list_structure();
+    string list_structure(string);
 
     Entry entrify();    
 
@@ -38,5 +38,5 @@ public:
     bool is_empty();
 
     void write();
-    void print();
+    string stringify();
 };

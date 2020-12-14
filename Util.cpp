@@ -57,7 +57,7 @@ void Header::read(int block_no) {
 	file.close();
 }
 
-void Header::print() {
+string Header::stringify() {
 
     char block_no_str[3];
     char block_address_str[5];
@@ -68,13 +68,14 @@ void Header::print() {
     sprintf(block_address_str, "%4x", (((int)block_no) << 8));
     sprintf(next_str, "%2d", (int)next);
     sprintf(prev_str, "%2d", (int)prev);
+    string bl = block_no_str;
 
-	cout << endl << "==========Header  info==========\n"
-                 << "|Block no.: " << block_no_str << "                 |" << endl 
-                 << "|Block Address: " << block_address_str << "           |" << endl 
-                 << "|Prev Block: " << prev_str << " Next Block: " << next_str << " |" << endl
-                 << "|is_dir: " << is_dir << " is_occupied: " << is_occupied << "      |"
-                 << "\n================================\n";
+	string header_string = "\n==========Header  info==========\n|Block no.: " + bl + "                 |\n" 
+                 + "|Block Address: " + block_address_str + "           |\n" + 
+                 + "|Prev Block: " + prev_str + " Next Block: " + next_str + " |\n" +
+                 + "|is_dir: " + to_string(is_dir) + " is_occupied: " + to_string(is_occupied) + "      |"
+                 + "\n================================\n";
+    return header_string;
 }
 
 /*=========================================================================================================================
@@ -285,18 +286,20 @@ bool is_empty_helper(int block_no, bool first_block) {
     return false;
 }
 
-void list_entry_helper(int block_no, bool first_block) {
+string list_entry_helper(int block_no, bool first_block) {
     Entry entry;
+    string list_string = "";
     for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
         entry.read(entry_no, block_no);
         if(entry.is_occupied) {
-            cout << entry.file_name;
+            list_string += entry.file_name;
             if (entry.is_dir)
-                cout << "/";
-            cout << "\t";
+                list_string += "/";
+            list_string += "\t";
         }
     }
-    cout << endl;
+    list_string += "\n";
+    return list_string;
 }
 
 void allocate_extra_block(Header first_header) {
@@ -368,28 +371,28 @@ vector<string> split_string(string s, char delimiter)
 }
 
 
-void print_manual() {
-    cout << "__________________________________________________________________________________________________________________________" << endl;
-    cout << "                                                  Manual for File System" << endl;
-    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
-    cout << "Command" << "\t\tOpt Flags" << "\tUsage" << "\t\t\tDescription" << endl << endl;
+string get_manual() {
+    string s = "__________________________________________________________________________________________________________________________\n"
+        + string("                                                  Manual for File System\n")
+        + "--------------------------------------------------------------------------------------------------------------------------\n"
+        + "Command\t\tOpt Flags" + "\tUsage\t\t\tDescription\n\n"
+        + "ls\t\t-a\t\tls [flags]\t\tLists The files and folders in current directory.\n\t\t\t\t\t\t\tUse \'-a\' to view all sub dirs.\n"
+        + "mkdir" + "\t\t" + "\t\tmkdir [name]" + "\t\tCreates a folder in the current directory.\n"
+        + "mkfile" + "\t\t" + "\t\tmkfile [name]" + "\t\tCreates a file in the current directory.\n"
+        + "view" + "\t\t" + "\t\tview" + "\t\t\tView Stats of the File System.\n"
+        + "cd" + "\t\t" + "\t\tcd [destination]" + "\tChange current directory.\n"
+        + "rm" + "\t\t-r" + "\t\trm [flag] [name]" + "\tRemove File/folder from current directory.\n\t\t\t\t\t\t\tUse \'-r\' to delete recursively.\n"
+        + "mv" + "\t\t" + "\t\tmv [source] [dest]" + "\tMove File/Folder from source to destination.\n"
+        + "pwd" + "\t\t" + "\t\tpwd" + "\t\t\tPrint present working directory.\n"
+        + "map" + "\t\t" + "\t\tmap" + "\t\t\tShow which blocks in memory a file/folder occupies.\n"
+        + "open" + "\t\t" + "\t\topen [file_name]" + "\tOpen file to read/write.\n"
+        + "close" + "\t\t" + "\t\tclose" + "\t\t\tClose currently open file.\n"
+        + "read" + "\t\t[start] [size]" + "\tread [flags]" + "\t\tRead entire opened file.\n\t\t\t\t\t\t\tUse options to read from an offset or limit file size.\n"
+        + "write" + "\t\t[start] [size] -s [content]" + "\twrite [start] [size] [options] [content]" + "\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t\t\tUse options to modify existing file content.\n"
+        + "append" + "\t\t -s [contents]" + "\tappend [flags] [content]" + "\tWrite to opened file. It writes to the end of existing file.\n"
+        + "trunc" + "\t\t" + "\t\ttrunc [size]" + "\t\tTruncate opened file to size.\n"
+        + "man" + "\t\t" + "\t\tman" + "\t\t\tOpen Manual\n"
 
-    cout << "ls" << "\t\t-a" << "\t\tls [flags]" << "\t\tLists The files and folders in current directory.\n\t\t\t\t\t\t\tUse \'-a\' to view all sub dirs." << endl;
-    cout << "mkdir" << "\t\t" << "\t\tmkdir [name]" << "\t\tCreates a folder in the current directory." << endl;
-    cout << "mkfile" << "\t\t" << "\t\tmkfile [name]" << "\t\tCreates a file in the current directory." << endl;
-    cout << "view" << "\t\t" << "\t\tview" << "\t\t\tView Stats of the File System." << endl;
-    cout << "cd" << "\t\t" << "\t\tcd [destination]" << "\tChange current directory." << endl;
-    cout << "rm" << "\t\t-r" << "\t\trm [flag] [name]" << "\tRemove File/folder from current directory.\n\t\t\t\t\t\t\tUse \'-r\' to delete recursively." << endl;
-    cout << "mv" << "\t\t" << "\t\tmv [source] [dest]" << "\tMove File/Folder from source to destination." << endl;
-    cout << "pwd" << "\t\t" << "\t\tpwd" << "\t\t\tPrint present working directory." << endl;
-    cout << "map" << "\t\t" << "\t\tmap" << "\t\t\tShow which blocks in memory a file/folder occupies." << endl;
-    cout << "open" << "\t\t" << "\t\topen [file_name]" << "\tOpen file to read/write." << endl;
-    cout << "close" << "\t\t" << "\t\tclose" << "\t\t\tClose currently open file." << endl;
-    cout << "read" << "\t\t[start] [size]" << "\tread [flags]" << "\t\tRead entire opened file.\n\t\t\t\t\t\t\tUse options to read from an offset or limit file size." << endl;
-    cout << "write" << "\t\t[start] [size] -s [content]" << "\twrite [start] [size] [options] [content]" << "\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t\t\tUse options to modify existing file content." << endl;
-    cout << "append" << "\t\t -s [contents]" << "\tappend [flags] [content]" << "\tWrite to opened file. It writes to the end of existing file." << endl;
-    cout << "trunc" << "\t\t" << "\t\ttrunc [size]" << "\t\tTruncate opened file to size." << endl;
-    cout << "man" << "\t\t" << "\t\tman" << "\t\t\tOpen Manual" << endl;
-
-    cout << "--------------------------------------------------------------------------------------------------------------------------" << endl;
+        + "--------------------------------------------------------------------------------------------------------------------------\n";
+    return s;
 }

@@ -71,7 +71,7 @@ void Directory::add_entry(Entry input_entry) {
             entry = find_empty_entry();
         }
         catch (int b) {
-            cout << "Exception" << endl;
+            exit(-1);
         }
     }
 
@@ -83,57 +83,60 @@ void Directory::add_entry(Entry input_entry) {
     entry.write();
 }
 
-void Directory::list_contents() {
+string Directory::list_contents() {
     Header header(&first_header);
-    
+    string list_string = "";
     while (true) {
-        list_entry_helper(header.block_no, first_header.block_no == header.block_no);
+        list_string += list_entry_helper(header.block_no, first_header.block_no == header.block_no);
         if (header.next == 0)  
             break;
         header = new Header(header.next);
     }
+    return list_string;
 }
 
-void list_structure_helper(int block_no, bool first_block, string prefix) {
+string list_structure_helper(int block_no, bool first_block, string prefix) {
     Entry entry;
+    string structure_string = "";
     for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
         entry.read(entry_no, block_no);
         if(entry.is_occupied) {
             if (entry.is_dir)
-                cout << prefix << '+' << entry.file_name;
+                structure_string += prefix + '+' + entry.file_name;
             else
-                cout << prefix << '*' << entry.file_name;
+                structure_string += prefix + '*' + entry.file_name;
             if (entry.is_dir) {
-                cout << "/\n";
+                structure_string += "/\n";
                 Directory dir(entry);
                 if (prefix.length() > 0)
                     prefix.replace(prefix.length()-8, 8,"        ");
-                dir.list_structure(prefix+"|--------");
+                structure_string += dir.list_structure(prefix+"|--------");
             }
             else
-                cout << endl;
+                structure_string += "\n";
         }
     }
+    return structure_string;
 }
 
-void Directory::list_structure(string prefix) {
+string Directory::list_structure(string prefix) {
     Header header(&first_header);
-    
+    string structure_string = "";
     while (true) {
-        list_structure_helper(header.block_no, first_header.block_no == header.block_no, prefix);
+        structure_string += list_structure_helper(header.block_no, first_header.block_no == header.block_no, prefix);
         if (header.next == 0)  
             break;
         header = new Header(header.next);
     }
+    return structure_string;
 }
 
-void Directory::list_structure() {
-    list_structure("");
+string Directory::list_structure() {
+    return list_structure("");
 }
 
 
 Entry Directory::entrify() {
-
     return Entry(file_name, file_start, true, true);
 }
 
@@ -154,7 +157,6 @@ Entry Directory::find_entry(string name,bool dir_only, bool file_only) {
             }
         }
     }
-
 }
 
 Entry Directory::find_entry(string name) {
@@ -162,21 +164,15 @@ Entry Directory::find_entry(string name) {
 }
 
 void Directory::remove_entry(string file_name) {
-    try
-    {
+    try {
         find_entry(file_name).clear();
-
     }
-    catch(int err)
-    {
-        cout << "Exception: trying to remove non-existant entry" << endl;
-        exit(1);
+    catch(int err) {
+        throw("Exception: trying to remove non-existant entry");
     }
-    
 }
 
 void Directory::clear() {
-
     Header header(&first_header);
 
     while (true) {
@@ -185,7 +181,6 @@ void Directory::clear() {
         if (first_block) {
             entry.read(0, header.block_no);
             entry.clear();
-            
         }
 
         for(int entry_no = first_block ? 1 : 0; entry_no < 8; entry_no++) {
@@ -204,7 +199,6 @@ void Directory::clear() {
             break;
         header.read(header.next);
     }
-
 }
 
 bool Directory::is_empty() {
@@ -221,7 +215,9 @@ bool Directory::is_empty() {
 }
 
 
-void Directory::print() {
-    cout << endl << "===Dir info===\n"<< "Block no.: " << (int)file_start << " Parent: " << parent_dir.file_name << endl << "File name: " << file_name << endl << "is_dir: " << is_dir << "\n======\n";
+string Directory::stringify() {
+    string s = "\n===Dir info===\nBlock no.: " + to_string((int)file_start) + " Parent: " + parent_dir.file_name + "\nFile name: " +
+         file_name + "\nis_dir: " + to_string(is_dir) + "\n======\n";
+    return s;
 }
 

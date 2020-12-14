@@ -1,42 +1,36 @@
 #include "memory_map.h"
 
-void block_map(){
+string block_map(){
 
-    cout << "========================================BLOCK MAP========================================" << endl;
-    cout << " # -> Occupied (Folder data)        * -> Occupied (File Data)            _ -> Unoccupied " << endl;
-    cout << "=========================================================================================" << endl;
+    string s = "========================================BLOCK MAP========================================\n";
+        + " # -> Occupied (Folder data)        * -> Occupied (File Data)            _ -> Unoccupied \n";
+        + "=========================================================================================\n";
     for (size_t i = 0; i < ADDRESS_SPACE/BLOCK_SIZE; i++)
     {   
         if (i % 8 == 0)
-        {   
-            cout << endl;
-            cout << "\t\t";
-        }
+            s+="\n\t\t";
         
         Header header((char)i);
 
         if (header.is_occupied)
             if (header.is_dir)
-                cout << "#\t";
+                s+= "#\t";
             else
-                cout << "*\t";
+                s+= "*\t";
         else
-            cout << "_\t";
+            s+= "_\t";
     }
-    cout << endl;
-    cout << "=========================================================================================" << endl;
-    
+    s+= "\n=========================================================================================\n";
+    return s;
 }
 
-void disk_usage() {
-    cout << "=========================================== Disk Usage(%) ==========================================" << endl;
-    cout << "              # -> Used                                                    * -> Unused              " << endl;
-    cout << endl;
+string disk_usage() {
+    string s = "=========================================== Disk Usage(%) ==========================================\n"
+        + string("              # -> Used                                                    * -> Unused              \n\n");
     
     int total = ADDRESS_SPACE/BLOCK_SIZE;
     int used = 0;
-    for (size_t i = 0; i < total; i++)
-    {   
+    for (size_t i = 0; i < total; i++) {   
         Header header((char)i);
         if (header.is_occupied)
             used++;
@@ -44,32 +38,29 @@ void disk_usage() {
 
     int used_percent = ((float)used/(float)total) * 100;
     for (size_t i = 0; i < used_percent; i++)
-    {
-        cout << "#";
-    }
+        s+= "#";
 
     for (size_t i = 0; i < 100-used_percent; i++)
-    {
-        cout << "*";
-    }
+        s+= "*";
 
-    cout << endl;
-    cout << "____________________________________________________________________________________________________" << endl;
+    s += "\n____________________________________________________________________________________________________\n";
+    return s;
 }
 
-void show_memory_map(Entry entry) {
+string show_memory_map(Entry entry) {
     Header first_header = Header(entry.file_start);
 
-    cout << "\t=====Start=====" << endl;
+    string s = "\t=====Start=====\n";
     while (true) {
-        first_header.print();
+        s+= first_header.stringify();
         if(first_header.next == 0)
             break;
-        cout << "\t      ||      " << endl;
-        cout << "\t      ||      " << endl;
-        cout << "\t     \\  /     " << endl;
-        cout << "\t      \\/      " << endl;
+        s+= "\t      ||      \n";
+        s+= "\t      ||      \n";
+        s+= "\t     \\  /     \n";
+        s+= "\t      \\/      \n";
         first_header.read(first_header.next);
     }
-    cout << "\t=====End=====" << endl;
+    s += "\t=====End=====\n";
+    return s;
 }

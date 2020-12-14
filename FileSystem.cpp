@@ -7,6 +7,7 @@ FileSystem::FileSystem(){
     Header root_header(0);
 	current_dir = *(new Directory(0, "/", true, root_header, Entry("/", 0, true, true)));
     file_open = false;
+    out_stream = &cout;
 }
 
 void FileSystem::initialize() {
@@ -34,13 +35,13 @@ void FileSystem::mkdir(string file_name) {
 
     if (file_name.length() > 30) 
     {
-        cout << "File names cannot exceed 30 Characters!" << endl;
+        *out_stream << "File names cannot exceed 30 Characters!" << endl;
         return;
     }
 
     try {
         current_dir.find_entry(file_name);
-        cout << "Folder already exists" << endl;
+        *out_stream << "Folder already exists" << endl;
     }
     catch(int err) {
         char new_block = (char)find_empty_block(0);
@@ -56,7 +57,7 @@ void FileSystem::mkdir(string file_name) {
 
 void FileSystem::open(string file_name) {
     if(file_open) {
-        cout << "A file is already open. Close it to open new file" << endl;
+        *out_stream << "A file is already open. Close it to open new file" << endl;
         return;
     }
     try {
@@ -66,10 +67,10 @@ void FileSystem::open(string file_name) {
             file_open = true;
         }
         else
-            cout << "File of name " << file_name << " not found" << endl;
+            *out_stream << "File of name " << file_name << " not found" << endl;
     }
     catch (int err) {
-        cout << file_name << " not found" << endl;
+        *out_stream << file_name << " not found" << endl;
     }
 }
 
@@ -82,27 +83,33 @@ void FileSystem::close() {
 
 void FileSystem::read(int start, int size) {
     if(file_open)
-        cout << current_file->read(start, size) << endl;
+        *out_stream << current_file->read(start, size) << endl;
     else
-        cout << "No file opened" << endl;
+        *out_stream << "No file opened" << endl;
 }
 
 void FileSystem::write(string file_contents, int start) {
-    if(file_open)
-        current_file->write(file_contents, start);
+    if(file_open) {
+        try {
+           current_file->write(file_contents, start);
+        }
+        catch(const char* err) {
+            *out_stream << err << endl;
+        }
+    }
     else
-        cout << "No file opened" << endl;
+        *out_stream << "No file opened" << endl;
 }
 
 void FileSystem::append(string file_contents) {
     if(file_open)
         current_file->write(file_contents, (int)current_file->read().length());
     else
-        cout << "No file opened" << endl;
+        *out_stream << "No file opened" << endl;
 }
 
 void FileSystem::pwd() {
-    cout << current_dir.file_name << endl;
+    *out_stream << current_dir.file_name << endl;
 }
 
 Directory FileSystem::cd(string dir_name, Directory dir){
@@ -117,14 +124,14 @@ Directory FileSystem::cd(string dir_name, Directory dir){
         return Directory(entry);
     }
     catch(int err) {
-        cout << dir_name << " does not exist" << endl;
+        *out_stream << dir_name << " does not exist" << endl;
         throw(-1);
     }
     
 }
 
 void FileSystem::ls() {
-    current_dir.list_contents();
+    *out_stream << current_dir.list_contents();
 }
 
 void FileSystem::rm(string file_name) {
@@ -133,7 +140,7 @@ void FileSystem::rm(string file_name) {
 
 void FileSystem::rm(string file_name, bool recursive) {
     if (!file_name.compare("/")) {
-        cout << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN" << endl;
+        *out_stream << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN" << endl;
         return;
     }
     try {
@@ -142,7 +149,7 @@ void FileSystem::rm(string file_name, bool recursive) {
             Directory directory(entry);
 
             if (!directory.is_empty() && !recursive) {
-                cout << "Directory not empty. Use -r flag to delete recursively" << endl;
+                *out_stream << "Directory not empty. Use -r flag to delete recursively" << endl;
                 return;
             }
             else
@@ -152,7 +159,7 @@ void FileSystem::rm(string file_name, bool recursive) {
         delete_file(entry);
     }
     catch(int err) {
-        cout << file_name << " not found" << endl;
+        *out_stream << file_name << " not found" << endl;
         return;
     }
 }
@@ -215,7 +222,7 @@ void FileSystem::mv(string source, string destination) {
 void FileSystem::mkfile(string file_name) {
     try {
         current_dir.find_entry(file_name);
-        cout << "File already exists" << endl;
+        *out_stream << "File already exists" << endl;
     }
     catch(int err) {
         File file(file_name);
@@ -234,32 +241,32 @@ void FileSystem::stat_(string file_name) {
         if (entry.is_dir) {
             Directory directory(entry);
             if (directory.is_empty())
-                cout << "Directory is empty" << endl;
+                *out_stream << "Directory is empty" << endl;
             else
-                cout << "Directory is non-empty" << endl;
+                *out_stream << "Directory is non-empty" << endl;
         }
         else
-            cout << "File exists" << endl;
+            *out_stream << "File exists" << endl;
     }
     catch(int err) {
-        cout << err;
-        cout << file_name << " not found" << endl;
+        *out_stream << err;
+        *out_stream << file_name << " not found" << endl;
         return;
     }
 }
 
 void FileSystem::view() {
-    disk_usage();
-    cout << endl << endl;
-    block_map();
+    *out_stream << disk_usage();
+    *out_stream << "\n\n";
+    *out_stream << block_map();
 }
 
 void FileSystem::man() {
-    print_manual();
+    *out_stream << get_manual();
 }
 
 void FileSystem::map(string file_name) {
-    show_memory_map(current_dir.find_entry(file_name));
+    *out_stream << show_memory_map(current_dir.find_entry(file_name));
 }
 
 void FileSystem::run(string command) {
@@ -269,7 +276,7 @@ void FileSystem::run(string command) {
         ls();
     }
     else if (!tokens[0].compare("ls")  && !tokens[1].compare("-a")) {
-        current_dir.list_structure();
+        *out_stream << current_dir.list_structure();
     }
     else if (!tokens[0].compare("mkdir")) {
         mkdir(tokens[1]);
@@ -326,7 +333,7 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("read")) {
         if (!file_open) {
-            cout << "No file open" << endl;
+            *out_stream << "No file open" << endl;
             return;
         }
         int start, size;
@@ -347,7 +354,7 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("write")) {
         if (!file_open) {
-            cout << "No file open" << endl;
+            *out_stream << "No file open" << endl;
             return;
         }
         string file_contents;
@@ -355,12 +362,12 @@ void FileSystem::run(string command) {
         int start;
         if (tokens.size() == 1) {
             start = 0;
-            cout << "Enter contents of file:" << endl;
+            *out_stream << "Enter contents of file:" << endl;
             getline(cin, file_contents);
         }
         else if (tokens.size() == 2) {
             start = stoi(tokens[1]);
-            cout << "Enter contents of file:" << endl;
+            *out_stream << "Enter contents of file:" << endl;
             getline(cin, file_contents);
         }
         else if (tokens.size() >= 3) {
@@ -372,7 +379,7 @@ void FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+tokens[2].size()+3);
             }
             else {
-                cout << "Invalid Arguments" << endl;
+                *out_stream << "Invalid Arguments" << endl;
                 return;
             }
         }
@@ -381,13 +388,13 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("append")) {
         if (!file_open) {
-            cout << "No file open" << endl;
+            *out_stream << "No file open" << endl;
             return;
         }
         string file_contents;
 
         if (tokens.size() == 1) {
-            cout << "Enter contents of file:" << endl;
+            *out_stream << "Enter contents of file:" << endl;
             getline(cin, file_contents);
         }
         else if (tokens.size() >= 2) {
@@ -395,7 +402,7 @@ void FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
             }
             else {
-                cout << "Invalid Arguments" << endl;
+                *out_stream << "Invalid Arguments" << endl;
                 return;
             }
         }
@@ -404,14 +411,14 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
-            cout << "No file open" << endl;
+            *out_stream << "No file open" << endl;
             return;
         }
         current_file->truncate(stoi(tokens[1]));
     }
     else if (!tokens[0].compare("mvwf")) {
         if (!file_open) {
-            cout << "No file open" << endl;
+            *out_stream << "No file open" << endl;
             return;
         }
         current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
@@ -421,15 +428,22 @@ void FileSystem::run(string command) {
     }
 }
 
-void FileSystem::run_script(string file_name) {
-    // while(true) {
-	// 	string command;
-	// 	fopen
-	// 	getline(cin, command);
-	// 	if (!command.compare("exit"))
-	// 		exit(-1);
-	// 	else {
-	// 		file_system.run(command);
-	// 	}
-	// }
+void FileSystem::run_script(ifstream& file) {
+    while(file.peek() != EOF) {
+		string command;
+		getline(file, command);
+		if (!command.compare("exit"))
+			exit(-1);
+		else {
+			run(command);
+		}
+	}
+}
+
+void thread_wrapper(FileSystem file_system, string file_name) {
+    ifstream file(file_name);
+    ofstream out_file("out_" + file_name);
+    file_system.out_stream = &out_file;
+    file_system.run_script(file);
+    file.close();
 }
