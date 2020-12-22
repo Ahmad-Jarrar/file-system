@@ -271,7 +271,10 @@ void FileSystem::map(string file_name) {
 
 void FileSystem::run(string command) {
     vector<string> tokens = split_string(command, ' ');
+    if (tokens.size() == 0)
+        return;
 
+    
     if (!tokens[0].compare("ls") && tokens.size() < 2) {
         ls();
     }
@@ -281,13 +284,30 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("mkdir")) {
         mkdir(tokens[1]);
     }
-    else if (!tokens[0].compare("rm") && !tokens[1].compare("-r")) {
+    else if (tokens.size() > 2 && !tokens[0].compare("rm") && !tokens[1].compare("-r")) {
+        if (tokens[2].size() == 0)
+        {
+            *out_stream << "Invalid Command! for help type 'man'" << endl;
+            return;
+        }
+        
         rm(tokens[2], true);
     }
-    else if (!tokens[0].compare("rm")) {
+    else if (!tokens[0].compare("rm") && tokens[1].compare("-r")) {
+        if (tokens.size() < 2 || tokens[1].size() == 0)
+        {
+            *out_stream << "Invalid Command! for help type 'man'" << endl;
+            return;
+        }
         rm(tokens[1]);
     }
     else if (!tokens[0].compare("cd")) {
+        if (tokens[1].size() == 0)
+        {
+            *out_stream << "Invalid Command! for help type 'man'" << endl;
+            return;
+        }
+        
         try {
             Directory curr_dir = Directory(&current_dir);
             vector<string> path = split_string(tokens[1], '/');
@@ -314,6 +334,11 @@ void FileSystem::run(string command) {
         stat_(tokens[1]);
     }
     else if (!tokens[0].compare("map")) {
+        if (tokens.size() < 2 || tokens[1].size() == 0)
+        {
+            *out_stream << "Invalid Command! for help type 'man'" << endl;
+            return;
+        }
         map(tokens[1]);
     }
     else if (!tokens[0].compare("view")) {
@@ -424,8 +449,19 @@ void FileSystem::run(string command) {
         current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
     }
     else if (!tokens[0].compare("mv")) {
+        if (tokens.size() < 2 || !tokens[1].size() || tokens[2].size())
+        {
+            *out_stream << "Invalid Command! for help type 'man'" << endl;
+            return;
+        }
+        
         mv(tokens[1], tokens[2]);
     }
+    else
+    {
+        *out_stream << "Invalid Command! for help type 'man'" << endl;
+    }
+    
 }
 
 void FileSystem::run_script(ifstream& file) {
@@ -441,9 +477,17 @@ void FileSystem::run_script(ifstream& file) {
 }
 
 void thread_wrapper(FileSystem file_system, string file_name) {
-    ifstream file(file_name);
+    struct stat buffer; 
+    
+    ifstream file(file_name);  
     ofstream out_file("out_" + file_name);
     file_system.out_stream = &out_file;
-    file_system.run_script(file);
+    if(!(stat (file_name.c_str(), &buffer) == 0)) {
+        out_file << file_name << " does not exists\n";
+    }
+    else {    
+        file_system.run_script(file);
+    }
     file.close();
+    out_file.close();
 }

@@ -1,0 +1,5 @@
+ls
+mkdir folder2
+mkfile file5.txt
+write -s This is a test file 
+close

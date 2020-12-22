@@ -1,0 +1,6 @@
+ls
+cd folder1
+pwd
+open file1.txt
+read
+close

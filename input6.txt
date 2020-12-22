@@ -1,0 +1,3 @@
+ls
+rm folder1
+ls

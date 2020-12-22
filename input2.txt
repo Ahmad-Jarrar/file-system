@@ -1,0 +1,13 @@
+ls
+mkdir folder2
+cd folder2
+mkfile file3.txt
+open file3.txt
+write -s "This is a test file 3"
+read
+close
+mkfile file4.txt
+open file4.txt
+write -s "This is a test file 4"
+read
+close

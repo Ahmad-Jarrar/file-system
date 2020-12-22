@@ -1,0 +1,17 @@
+ls
+mkdir folder1
+cd folder1
+mkfile file1.txt
+open file1.txt
+write -s This is a test file 1
+read
+close
+mkfile file2.txt
+open file2.txt
+write -s This is a test file 2
+read
+close
+open file1.txt
+append -s  This is append test
+read
+close
