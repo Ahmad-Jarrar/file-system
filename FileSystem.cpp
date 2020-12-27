@@ -31,17 +31,16 @@ void FileSystem::initialize() {
 }
 
 
-void FileSystem::mkdir(string file_name) {
+string FileSystem::mkdir(string file_name) {
 
     if (file_name.length() > 30) 
     {
-        *out_stream << "File names cannot exceed 30 Characters!" << endl;
-        return;
+        return "File names cannot exceed 30 Characters!\n";
     }
 
     try {
         current_dir.find_entry(file_name);
-        *out_stream << "Folder already exists" << endl;
+        return "Folder already exists\n";
     }
     catch(int err) {
         char new_block = (char)find_empty_block(0);
@@ -57,7 +56,7 @@ void FileSystem::mkdir(string file_name) {
 
 void FileSystem::open(string file_name) {
     if(file_open) {
-        *out_stream << "A file is already open. Close it to open new file" << endl;
+        *out_stream << "A file is already open. Close it to open new file\n";
         return;
     }
     try {
@@ -67,10 +66,10 @@ void FileSystem::open(string file_name) {
             file_open = true;
         }
         else
-            *out_stream << "File of name " << file_name << " not found" << endl;
+            *out_stream << "File of name " << file_name << " not found\n";
     }
     catch (int err) {
-        *out_stream << file_name << " not found" << endl;
+        *out_stream << file_name << " not found\n";
     }
 }
 
@@ -85,7 +84,7 @@ void FileSystem::read(int start, int size) {
     if(file_open)
         *out_stream << current_file->read(start, size) << endl;
     else
-        *out_stream << "No file opened" << endl;
+        *out_stream << "No file opened\n";
 }
 
 void FileSystem::write(string file_contents, int start) {
@@ -98,14 +97,14 @@ void FileSystem::write(string file_contents, int start) {
         }
     }
     else
-        *out_stream << "No file opened" << endl;
+        *out_stream << "No file opened\n";
 }
 
 void FileSystem::append(string file_contents) {
     if(file_open)
         current_file->write(file_contents, (int)current_file->read().length());
     else
-        *out_stream << "No file opened" << endl;
+        *out_stream << "No file opened\n";
 }
 
 void FileSystem::pwd() {
@@ -124,14 +123,14 @@ Directory FileSystem::cd(string dir_name, Directory dir){
         return Directory(entry);
     }
     catch(int err) {
-        *out_stream << dir_name << " does not exist" << endl;
+        *out_stream << dir_name << " does not exist\n";
         throw(-1);
     }
     
 }
 
-void FileSystem::ls() {
-    *out_stream << current_dir.list_contents();
+string FileSystem::ls() {
+    return current_dir.list_contents();
 }
 
 void FileSystem::rm(string file_name) {
@@ -140,7 +139,7 @@ void FileSystem::rm(string file_name) {
 
 void FileSystem::rm(string file_name, bool recursive) {
     if (!file_name.compare("/")) {
-        *out_stream << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN" << endl;
+        *out_stream << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN\n";
         return;
     }
     try {
@@ -149,7 +148,7 @@ void FileSystem::rm(string file_name, bool recursive) {
             Directory directory(entry);
 
             if (!directory.is_empty() && !recursive) {
-                *out_stream << "Directory not empty. Use -r flag to delete recursively" << endl;
+                *out_stream << "Directory not empty. Use -r flag to delete recursively\n";
                 return;
             }
             else
@@ -159,7 +158,7 @@ void FileSystem::rm(string file_name, bool recursive) {
         delete_file(entry);
     }
     catch(int err) {
-        *out_stream << file_name << " not found" << endl;
+        *out_stream << file_name << " not found\n";
         return;
     }
 }
@@ -222,7 +221,7 @@ void FileSystem::mv(string source, string destination) {
 void FileSystem::mkfile(string file_name) {
     try {
         current_dir.find_entry(file_name);
-        *out_stream << "File already exists" << endl;
+        *out_stream << "File already exists\n";
     }
     catch(int err) {
         File file(file_name);
@@ -241,16 +240,16 @@ void FileSystem::stat_(string file_name) {
         if (entry.is_dir) {
             Directory directory(entry);
             if (directory.is_empty())
-                *out_stream << "Directory is empty" << endl;
+                *out_stream << "Directory is empty\n";
             else
-                *out_stream << "Directory is non-empty" << endl;
+                *out_stream << "Directory is non-empty\n";
         }
         else
-            *out_stream << "File exists" << endl;
+            *out_stream << "File exists\n";
     }
     catch(int err) {
         *out_stream << err;
-        *out_stream << file_name << " not found" << endl;
+        *out_stream << file_name << " not found\n";
         return;
     }
 }
@@ -269,26 +268,25 @@ void FileSystem::map(string file_name) {
     *out_stream << show_memory_map(current_dir.find_entry(file_name));
 }
 
-void FileSystem::run(string command) {
+string FileSystem::run(string command) {
     vector<string> tokens = split_string(command, ' ');
     if (tokens.size() == 0)
-        return;
+        return "";
 
     
     if (!tokens[0].compare("ls") && tokens.size() < 2) {
-        ls();
+        return ls();
     }
     else if (!tokens[0].compare("ls")  && !tokens[1].compare("-a")) {
-        *out_stream << current_dir.list_structure();
+        return current_dir.list_structure();
     }
     else if (!tokens[0].compare("mkdir")) {
-        mkdir(tokens[1]);
+        return mkdir(tokens[1]);
     }
     else if (tokens.size() > 2 && !tokens[0].compare("rm") && !tokens[1].compare("-r")) {
         if (tokens[2].size() == 0)
         {
-            *out_stream << "Invalid Command! for help type 'man'" << endl;
-            return;
+            return "Invalid Command! for help type 'man'\n";
         }
         
         rm(tokens[2], true);
@@ -296,17 +294,13 @@ void FileSystem::run(string command) {
     else if (!tokens[0].compare("rm") && tokens[1].compare("-r")) {
         if (tokens.size() < 2 || tokens[1].size() == 0)
         {
-            *out_stream << "Invalid Command! for help type 'man'" << endl;
-            return;
+            return "Invalid Command! for help type 'man'\n";
         }
         rm(tokens[1]);
     }
     else if (!tokens[0].compare("cd")) {
         if (tokens[1].size() == 0)
-        {
-            *out_stream << "Invalid Command! for help type 'man'" << endl;
-            return;
-        }
+            return "Invalid Command! for help type 'man'\n";
         
         try {
             Directory curr_dir = Directory(&current_dir);
@@ -324,7 +318,7 @@ void FileSystem::run(string command) {
             current_dir = curr_dir;
         }
         catch(int i) {
-            return;
+            return "";
         }
     }
     else if (!tokens[0].compare("pwd")) {
@@ -335,10 +329,7 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("map")) {
         if (tokens.size() < 2 || tokens[1].size() == 0)
-        {
-            *out_stream << "Invalid Command! for help type 'man'" << endl;
-            return;
-        }
+            return "Invalid Command! for help type 'man'\n";
         map(tokens[1]);
     }
     else if (!tokens[0].compare("view")) {
@@ -357,10 +348,9 @@ void FileSystem::run(string command) {
         close();
     }
     else if (!tokens[0].compare("read")) {
-        if (!file_open) {
-            *out_stream << "No file open" << endl;
-            return;
-        }
+        if (!file_open)
+            return "No file open\n";
+
         int start, size;
         if (tokens.size() == 1) {
             start = 0;
@@ -379,20 +369,19 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("write")) {
         if (!file_open) {
-            *out_stream << "No file open" << endl;
-            return;
+            return "No file open\n";
         }
         string file_contents;
         
         int start;
         if (tokens.size() == 1) {
             start = 0;
-            *out_stream << "Enter contents of file:" << endl;
+            *out_stream << "Enter contents of file:\n";
             getline(cin, file_contents);
         }
         else if (tokens.size() == 2) {
             start = stoi(tokens[1]);
-            *out_stream << "Enter contents of file:" << endl;
+            *out_stream << "Enter contents of file:\n";
             getline(cin, file_contents);
         }
         else if (tokens.size() >= 3) {
@@ -404,8 +393,7 @@ void FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+tokens[2].size()+3);
             }
             else {
-                *out_stream << "Invalid Arguments" << endl;
-                return;
+                return "Invalid Arguments\n";
             }
         }
 
@@ -413,13 +401,12 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("append")) {
         if (!file_open) {
-            *out_stream << "No file open" << endl;
-            return;
+            return "No file open\n";
         }
         string file_contents;
 
         if (tokens.size() == 1) {
-            *out_stream << "Enter contents of file:" << endl;
+            return "Enter contents of file:\n";
             getline(cin, file_contents);
         }
         else if (tokens.size() >= 2) {
@@ -427,8 +414,7 @@ void FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
             }
             else {
-                *out_stream << "Invalid Arguments" << endl;
-                return;
+                return "Invalid Arguments\n";
             }
         }
 
@@ -436,32 +422,29 @@ void FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
-            *out_stream << "No file open" << endl;
-            return;
+            return "No file open\n";
         }
         current_file->truncate(stoi(tokens[1]));
     }
     else if (!tokens[0].compare("mvwf")) {
         if (!file_open) {
-            *out_stream << "No file open" << endl;
-            return;
+            return "No file open\n";
         }
         current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
     }
     else if (!tokens[0].compare("mv")) {
         if (tokens.size() < 2 || !tokens[1].size() || tokens[2].size())
         {
-            *out_stream << "Invalid Command! for help type 'man'" << endl;
-            return;
+            return "Invalid Command! for help type 'man'\n";
         }
         
         mv(tokens[1], tokens[2]);
     }
     else
     {
-        *out_stream << "Invalid Command! for help type 'man'" << endl;
+        return "Invalid Command! for help type 'man'\n";
     }
-    
+    return "\n";
 }
 
 void FileSystem::run_script(ifstream& file) {

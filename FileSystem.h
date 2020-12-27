@@ -11,12 +11,12 @@ public:
 
     void initialize();      // done
 
-    void run(string);
+    string run(string);
     void run_script(ifstream&);
 
-    void mkdir(string);     // Done
+    string mkdir(string);     // Done
     Directory cd(string, Directory);        // Done
-    void ls();              // Done
+    string ls();              // Done
     void rm(string);        // Done
     void rm(string, bool);  // Done
     void mv(string, string);// TODO

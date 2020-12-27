@@ -5,3 +5,4 @@ test.cpp
 *.sh
 .vscode/
 out_*
+server
