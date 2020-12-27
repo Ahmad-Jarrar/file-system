@@ -1,4 +1,4 @@
-#include "File.h"
+#include "../headers/File.h"
 
 
 using namespace std;
@@ -57,7 +57,7 @@ void File::write(string file_contents, int start) {
     // prepend contents of block to file_contents
     string block_contents = read_block_contents(header.block_no, 0);
 
-    if(block_contents.length() > 0)
+    if((int)block_contents.length() > 0)
         file_contents = block_contents.substr(0, start - (start_block_no<<8)) + file_contents;
 
     // unoccupy subsequent blocks
@@ -96,7 +96,7 @@ string File::read(int start, int size) {
     header = find_header_no(header, start_block_no);
     string file_contents = "";
 
-    while(file_contents.length() < size) {
+    while((int)file_contents.length() < size) {
         // header.print();
         string block_contents = read_block_contents(header.block_no, header.prev == 0 ? start - (start_block_no<<8) : 0);
         file_contents += block_contents;
@@ -122,14 +122,14 @@ void File::move_within_file(int start, int size, int target) {
     string file_contents = read(0);
     string move_string = file_contents.substr(start, size);
 
-    if(target > file_contents.length()-1) {
+    if(target > (int)file_contents.length()-1) {
         file_contents+=move_string;
     }
-    else if(move_string.length() > file_contents.length()-1-target){
+    else if((int)move_string.length() > (int)file_contents.length()-1-target){
         file_contents = file_contents.substr(0, target) + move_string;
     }
     else {
-        file_contents.replace(target, move_string.length(), move_string);
+        file_contents.replace(target, (int)move_string.length(), move_string);
     }
 
     write(file_contents, 0);

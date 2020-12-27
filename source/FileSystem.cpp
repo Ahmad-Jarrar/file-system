@@ -1,4 +1,4 @@
-#include "FileSystem.h"
+#include "../headers/FileSystem.h"
 
 
 
@@ -33,7 +33,7 @@ void FileSystem::initialize() {
 
 string FileSystem::mkdir(string file_name) {
 
-    if (file_name.length() > 30) 
+    if ((int)file_name.length() > 30) 
     {
         return "File names cannot exceed 30 Characters!\n";
     }
@@ -50,8 +50,7 @@ string FileSystem::mkdir(string file_name) {
 
         current_dir.add_entry(file_name, new_block, true, true);
     }
-
-    
+    return "";    
 }
 
 void FileSystem::open(string file_name) {
@@ -194,7 +193,7 @@ void FileSystem::mv(string source, string destination) {
     
     
 
-    for(int i = 0; i < source_path.size()-1; i++) {
+    for(int i = 0; i < (int)source_path.size()-1; i++) {
         try {
             source_dir = cd(source_path[i], source_dir);
         }
@@ -203,7 +202,7 @@ void FileSystem::mv(string source, string destination) {
         }
     }
 
-    for(int i = 0; i < dest_path.size()-1; i++) {
+    for(int i = 0; i < (int)dest_path.size()-1; i++) {
         try{
             dest_dir = cd(dest_path[i], dest_dir);
         }
@@ -312,7 +311,7 @@ string FileSystem::run(string command) {
                 path[0] = "..";
             }
 
-            for(int i = 0; i < path.size(); i++) {
+            for(int i = 0; i < (int)path.size(); i++) {
                 curr_dir = cd(path[i], curr_dir);
             }
             current_dir = curr_dir;

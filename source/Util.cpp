@@ -1,5 +1,5 @@
 // #include <bitset>
-#include "Util.h"
+#include "../headers/Util.h"
 
 using namespace std;
 
@@ -147,7 +147,7 @@ void Entry::print() {
 void write_file_entry(string file_name, char file_start, bool is_dir) {
     // file_name = file_name.substr(0, 30); TODO: VALIDATE LENGTH OF FILE NAME UPON ENTRY
     file_start = file_start | (is_dir ? IS_DIR : 0);
-    int padding = 30 - file_name.length();
+    int padding = 30 - (int)file_name.length();
     for (int i = 0; i < padding; i++) {
         file_name += (char)0;
     }
@@ -190,7 +190,7 @@ string escape(string str) {
                 break;
         }
         str.replace(start_pos, 2, to);
-        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+        start_pos += (int)to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
     }
     return str;
 }

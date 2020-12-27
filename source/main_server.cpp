@@ -7,8 +7,8 @@
 #include <string.h>
 #include <thread>
 #include <vector>
-#include "config.h"
-#include "FileSystem.h"
+#include "../headers/config.h"
+#include "../headers/FileSystem.h"
 #define PORT 95 
 
 void make_new_socket(int socket_id) {
@@ -26,12 +26,11 @@ void make_new_socket(int socket_id) {
 
 
 int main(int argc, char const *argv[]) { 
-    int server_fd, new_socket, valread; 
+    int server_fd, new_socket; 
     struct sockaddr_in address; 
     int opt = 1; 
     int addrlen = sizeof(address); 
-    char *hello = "Hello from server"; 
-       
+    
     // Creating socket file descriptor 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
         perror("socket failed"); 
@@ -67,7 +66,7 @@ int main(int argc, char const *argv[]) {
         threads.push_back(thread(make_new_socket, new_socket));
     }
     
-    for(int i = 0; i < threads.size(); i++)
+    for(int i = 0; i < (int)threads.size(); i++)
         threads[i].join();
 
     printf("Hello message sent\n"); 

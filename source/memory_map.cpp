@@ -1,11 +1,11 @@
-#include "memory_map.h"
+#include "../headers/memory_map.h"
 
 string block_map(){
 
-    string s = "========================================BLOCK MAP========================================\n";
-        + " # -> Occupied (Folder data)        * -> Occupied (File Data)            _ -> Unoccupied \n";
+    string s = string("========================================BLOCK MAP========================================\n")
+        + " # -> Occupied (Folder data)        * -> Occupied (File Data)            _ -> Unoccupied \n"
         + "=========================================================================================\n";
-    for (size_t i = 0; i < ADDRESS_SPACE/BLOCK_SIZE; i++)
+    for (int i = 0; i < ADDRESS_SPACE/BLOCK_SIZE; i++)
     {   
         if (i % 8 == 0)
             s+="\n\t\t";
@@ -30,17 +30,17 @@ string disk_usage() {
     
     int total = ADDRESS_SPACE/BLOCK_SIZE;
     int used = 0;
-    for (size_t i = 0; i < total; i++) {   
+    for (int i = 0; i < total; i++) {   
         Header header((char)i);
         if (header.is_occupied)
             used++;
     }
 
     int used_percent = ((float)used/(float)total) * 100;
-    for (size_t i = 0; i < used_percent; i++)
+    for (int i = 0; i < used_percent; i++)
         s+= "#";
 
-    for (size_t i = 0; i < 100-used_percent; i++)
+    for (int i = 0; i < 100-used_percent; i++)
         s+= "*";
 
     s += "\n____________________________________________________________________________________________________\n";

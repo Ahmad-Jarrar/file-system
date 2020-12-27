@@ -1,4 +1,4 @@
-#include "Dir.h"
+#include "../headers/Dir.h"
 
 
 Directory::Directory(char file_start, string file_name, bool is_dir, Header first_header, Entry parent_dir) {
@@ -108,8 +108,8 @@ string list_structure_helper(int block_no, bool first_block, string prefix) {
             if (entry.is_dir) {
                 structure_string += "/\n";
                 Directory dir(entry);
-                if (prefix.length() > 0)
-                    prefix.replace(prefix.length()-8, 8,"        ");
+                if ((int)prefix.length() > 0)
+                    prefix.replace((int)prefix.length()-8, 8,"        ");
                 structure_string += dir.list_structure(prefix+"|--------");
             }
             else

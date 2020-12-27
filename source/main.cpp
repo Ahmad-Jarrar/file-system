@@ -4,8 +4,8 @@
 #include <cstring>
 #include <unistd.h>
 #include <thread>
-#include "config.h"
-#include "FileSystem.h"
+#include "../headers/config.h"
+#include "../headers/FileSystem.h"
 
 using namespace std;
 
