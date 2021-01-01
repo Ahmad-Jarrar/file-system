@@ -273,7 +273,7 @@ string FileSystem::run(string command) {
         if (tokens.size() < 2 || tokens[1].size() == 0)
             out_string += "Invalid Command! for help type 'man'\n";
         else
-            out_string += rm(tokens[2]);
+            out_string += rm(tokens[1]);
     }
     else if (!tokens[0].compare("cd")) {
         if (tokens[1].size() == 0)
