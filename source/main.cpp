@@ -12,14 +12,14 @@ using namespace std;
 int main(int argc, char const *argv[]) {
 	if (argc == 1) {
 		FileSystem file_system;
+		cout << ">> ";
 		while(true) {
 			string command;
-			cout << ">> ";
 			getline(cin, command);
 			if (!command.compare("exit"))
 				exit(-1);
 			else {
-				file_system.run(command);
+				cout << file_system.run(command);
 			}
 		}
 	}

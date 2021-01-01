@@ -9,11 +9,11 @@
 #include <vector>
 #include "../headers/config.h"
 #include "../headers/FileSystem.h"
-#define PORT 95 
+#define PORT 95
 
 void make_new_socket(int socket_id) {
     FileSystem file_system;
-    char buffer[1024] = {0}; 
+    char buffer[1024] = {0};
     while(read(socket_id, buffer, 1024) > 0) {
         printf("Client sent: %s\n", buffer);
         string command(buffer);

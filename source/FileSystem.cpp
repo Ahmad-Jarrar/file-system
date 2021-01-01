@@ -79,11 +79,11 @@ void FileSystem::close() {
     }
 }
 
-void FileSystem::read(int start, int size) {
+string FileSystem::read(int start, int size) {
     if(file_open)
-        *out_stream << current_file->read(start, size) << endl;
+        return current_file->read(start, size) + "\n";
     else
-        *out_stream << "No file opened\n";
+        return "No file opened\n";
 }
 
 void FileSystem::write(string file_contents, int start) {
@@ -106,8 +106,8 @@ void FileSystem::append(string file_contents) {
         *out_stream << "No file opened\n";
 }
 
-void FileSystem::pwd() {
-    *out_stream << current_dir.file_name << endl;
+string FileSystem::pwd() {
+    return current_dir.file_name+"\n";
 }
 
 Directory FileSystem::cd(string dir_name, Directory dir){
@@ -132,33 +132,30 @@ string FileSystem::ls() {
     return current_dir.list_contents();
 }
 
-void FileSystem::rm(string file_name) {
-    rm(file_name, false);
+string FileSystem::rm(string file_name) {
+    return rm(file_name, false);
 }
 
-void FileSystem::rm(string file_name, bool recursive) {
-    if (!file_name.compare("/")) {
-        *out_stream << "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN\n";
-        return;
-    }
+string FileSystem::rm(string file_name, bool recursive) {
+    if (!file_name.compare("/"))
+        return "ROOT DIRECTORY: DO NOT ATTEMPT TO DELETE OR DIRE THINGS WILL HAPPEN\n";
+
     try {
         Entry entry = current_dir.find_entry(file_name);
         if (entry.is_dir) {
             Directory directory(entry);
 
-            if (!directory.is_empty() && !recursive) {
-                *out_stream << "Directory not empty. Use -r flag to delete recursively\n";
-                return;
-            }
+            if (!directory.is_empty() && !recursive)
+                return "Directory not empty. Use -r flag to delete recursively\n";
             else
                 directory.clear();
         }
         
         delete_file(entry);
+        return "\n";
     }
-    catch(int err) {
-        *out_stream << file_name << " not found\n";
-        return;
+    catch(string err) {
+        return file_name + " not found\n";
     }
 }
 
@@ -217,89 +214,70 @@ void FileSystem::mv(string source, string destination) {
     dest_dir.add_entry(entry);
 }
 
-void FileSystem::mkfile(string file_name) {
+string FileSystem::mkfile(string file_name) {
     try {
         current_dir.find_entry(file_name);
-        *out_stream << "File already exists\n";
+        return "File already exists\n";
     }
     catch(int err) {
         File file(file_name);
         file.create();
         current_dir.add_entry(file_name, file.file_start, false, true);
+        return "\n";
     }
 }
 
-void FileSystem::stat_(string file_name) {
+string FileSystem::view() {
+    string out_string = disk_usage();
+    out_string += "\n\n";
+    out_string += block_map();
+    return out_string;
+}
 
-    Entry entry;
+string FileSystem::man() {
+    return get_manual();
+}
+
+string FileSystem::map(string file_name) {
     try {
-        entry = current_dir.find_entry(file_name);
-        entry.print();
-            entry.print();
-        if (entry.is_dir) {
-            Directory directory(entry);
-            if (directory.is_empty())
-                *out_stream << "Directory is empty\n";
-            else
-                *out_stream << "Directory is non-empty\n";
-        }
-        else
-            *out_stream << "File exists\n";
+        return show_memory_map(current_dir.find_entry(file_name));
     }
-    catch(int err) {
-        *out_stream << err;
-        *out_stream << file_name << " not found\n";
-        return;
+    catch (int err) {
+        return "File not found\n";
     }
-}
-
-void FileSystem::view() {
-    *out_stream << disk_usage();
-    *out_stream << "\n\n";
-    *out_stream << block_map();
-}
-
-void FileSystem::man() {
-    *out_stream << get_manual();
-}
-
-void FileSystem::map(string file_name) {
-    *out_stream << show_memory_map(current_dir.find_entry(file_name));
 }
 
 string FileSystem::run(string command) {
     vector<string> tokens = split_string(command, ' ');
-    if (tokens.size() == 0)
-        return "";
-
+    string out_string = "";
     
+    if (tokens.size() == 0)
+        out_string += "";
+
     if (!tokens[0].compare("ls") && tokens.size() < 2) {
-        return ls();
+        out_string += ls();
     }
     else if (!tokens[0].compare("ls")  && !tokens[1].compare("-a")) {
-        return current_dir.list_structure();
+        out_string += current_dir.list_structure();
     }
     else if (!tokens[0].compare("mkdir")) {
-        return mkdir(tokens[1]);
+        out_string += mkdir(tokens[1]);
     }
     else if (tokens.size() > 2 && !tokens[0].compare("rm") && !tokens[1].compare("-r")) {
         if (tokens[2].size() == 0)
-        {
-            return "Invalid Command! for help type 'man'\n";
-        }
-        
-        rm(tokens[2], true);
+            out_string += "Invalid Command! for help type 'man'\n";
+        else
+            out_string += rm(tokens[2], true);
     }
     else if (!tokens[0].compare("rm") && tokens[1].compare("-r")) {
         if (tokens.size() < 2 || tokens[1].size() == 0)
-        {
-            return "Invalid Command! for help type 'man'\n";
-        }
-        rm(tokens[1]);
+            out_string += "Invalid Command! for help type 'man'\n";
+        else
+            out_string += rm(tokens[2]);
     }
     else if (!tokens[0].compare("cd")) {
         if (tokens[1].size() == 0)
-            return "Invalid Command! for help type 'man'\n";
+            out_string += "Invalid Command! for help type 'man'\n";
         
         try {
             Directory curr_dir = Directory(&current_dir);
@@ -317,28 +295,26 @@ string FileSystem::run(string command) {
             current_dir = curr_dir;
         }
         catch(int i) {
-            return "";
+            out_string += "\n";
         }
     }
     else if (!tokens[0].compare("pwd")) {
-        pwd();
-    }
-    else if (!tokens[0].compare("stat")) {
-        stat_(tokens[1]);
+        out_string += pwd();
     }
     else if (!tokens[0].compare("map")) {
         if (tokens.size() < 2 || tokens[1].size() == 0)
-            return "Invalid Command! for help type 'man'\n";
-        map(tokens[1]);
+            out_string += "Invalid Command! for help type 'man'\n";
+        else
+            out_string += map(tokens[1]);
     }
     else if (!tokens[0].compare("view")) {
-        view();
+        out_string += view();
     }
     else if (!tokens[0].compare("man")) {
-        man();
+        out_string += man();
     }
     else if (!tokens[0].compare("mkfile")) {
-        mkfile(tokens[1]);
+        out_string += mkfile(tokens[1]);
     }
     else if (!tokens[0].compare("open") && tokens.size() > 1) {
         open(tokens[1]);
@@ -347,9 +323,6 @@ string FileSystem::run(string command) {
         close();
     }
     else if (!tokens[0].compare("read")) {
-        if (!file_open)
-            return "No file open\n";
-
         int start, size;
         if (tokens.size() == 1) {
             start = 0;
@@ -364,12 +337,9 @@ string FileSystem::run(string command) {
             size = stoi(tokens[2]);
         }
         
-        read(start, size);
+        out_string += read(start, size);
     }
     else if (!tokens[0].compare("write")) {
-        if (!file_open) {
-            return "No file open\n";
-        }
         string file_contents;
         
         int start;
@@ -392,20 +362,17 @@ string FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+tokens[2].size()+3);
             }
             else {
-                return "Invalid Arguments\n";
+                out_string += "Invalid Arguments\n";
             }
         }
 
         write(file_contents, start);
     }
     else if (!tokens[0].compare("append")) {
-        if (!file_open) {
-            return "No file open\n";
-        }
         string file_contents;
 
         if (tokens.size() == 1) {
-            return "Enter contents of file:\n";
+            out_string += "Enter contents of file:\n";
             getline(cin, file_contents);
         }
         else if (tokens.size() >= 2) {
@@ -413,7 +380,7 @@ string FileSystem::run(string command) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
             }
             else {
-                return "Invalid Arguments\n";
+                out_string += "Invalid Arguments\n";
             }
         }
 
@@ -421,29 +388,29 @@ string FileSystem::run(string command) {
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
-            return "No file open\n";
+            out_string += "No file open\n";
         }
         current_file->truncate(stoi(tokens[1]));
     }
     else if (!tokens[0].compare("mvwf")) {
         if (!file_open) {
-            return "No file open\n";
+            out_string += "No file open\n";
         }
         current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
     }
     else if (!tokens[0].compare("mv")) {
         if (tokens.size() < 2 || !tokens[1].size() || tokens[2].size())
         {
-            return "Invalid Command! for help type 'man'\n";
+            out_string += "Invalid Command! for help type 'man'\n";
         }
         
         mv(tokens[1], tokens[2]);
     }
     else
     {
-        return "Invalid Command! for help type 'man'\n";
+        out_string += "Invalid Command! for help type 'man'\n";
     }
-    return "\n";
+    return out_string+">> ";
 }
 
 void FileSystem::run_script(ifstream& file) {

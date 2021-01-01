@@ -17,20 +17,18 @@ public:
     string mkdir(string);     // Done
     Directory cd(string, Directory);        // Done
     string ls();              // Done
-    void rm(string);        // Done
-    void rm(string, bool);  // Done
+    string rm(string);        // Done
+    string rm(string, bool);  // Done
     void mv(string, string);// TODO
-    void pwd();             // done
-    void view();
-    void map(string);
-    void man();
-
-    void stat_(string);     // Done
+    string pwd();             // done
+    string view();
+    string map(string);
+    string man();
     
-    void mkfile(string);    // Done
+    string mkfile(string);    // Done
     void open(string);      // done
     void close();           // done
-    void read(int start, int size);
+    string read(int start, int size);
     void write(string, int);
     void append(string);
 };

@@ -23,5 +23,8 @@ filesystem: $(OBJ) $(OBJ_DIR)/main.o
 server: $(OBJ) $(OBJ_DIR)/main_server.o
 	$(CXX) -o $@ $^ $(LIBS)
 
+client: $(OBJ) $(OBJ_DIR)/client.o
+	$(CXX) -o $@ $^ $(LIBS)
+
 clean:
 	rm -f $(OBJ_DIR)/*.o filesystem *.dat out_* server
