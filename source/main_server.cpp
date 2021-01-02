@@ -47,7 +47,7 @@ int main(int argc, char const *argv[]) {
     gethostname(hostbuffer, sizeof(hostbuffer)); 
     host_entry = gethostbyname(hostbuffer);
     ip_address = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
-    cout << "Starting FileSystem server on: " << hostbuffer << " " << ip_address << " port: " << PORT << endl;
+    cout << "Starting FileSystem server on: " << ip_address << " port: " << PORT << endl;
 
     vector<thread> threads;
     vector<Connection> connections;
