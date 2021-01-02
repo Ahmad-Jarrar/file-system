@@ -1,29 +1,13 @@
-// Server side C/C++ program to demonstrate Socket programming 
-#include <unistd.h> 
-#include <stdio.h> 
-#include <sys/socket.h> 
-#include <stdlib.h> 
-#include <netinet/in.h> 
-#include <string.h>
 #include <thread>
-#include <vector>
-#include "../headers/config.h"
-#include "../headers/FileSystem.h"
+#include "../headers/Connection.h"
+
 #define PORT 95
 
-void make_new_socket(int socket_id) {
-    FileSystem file_system;
-    char buffer[1024] = {0};
-    while(read(socket_id, buffer, 1024) > 0) {
-        printf("Client sent: %s\n", buffer);
-        string command(buffer);
-        string output = file_system.run(command);
-        cout << output.c_str() << endl;
-        send(socket_id , output.c_str(), strlen(output.c_str()) , 0 );
-        bzero(buffer, sizeof(buffer));
-    }
+void new_connection(int socket_id, string ip_address, vector<Connection> conns){
+    Connection *new_con = new Connection(socket_id, ip_address);
+    conns.push_back(*new_con);
+    new_con->start();
 }
-
 
 int main(int argc, char const *argv[]) { 
     int server_fd, new_socket; 
@@ -56,19 +40,33 @@ int main(int argc, char const *argv[]) {
         exit(EXIT_FAILURE); 
     }
 
+    char hostbuffer[256]; 
+    char *ip_address; 
+    struct hostent *host_entry; 
+    int hostname; 
+  
+    hostname = gethostname(hostbuffer, sizeof(hostbuffer)); 
+  
+    host_entry = gethostbyname(hostbuffer);
+  
+    ip_address = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+
+    cout << "Starting FileSystem server on: " << ip_address << " port: " << PORT << endl;
+
     vector<thread> threads;
+    vector<Connection> connections;
     while (1) {
         new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
         if (new_socket < 0) {
             perror("accept"); 
             exit(EXIT_FAILURE); 
         }
-        threads.push_back(thread(make_new_socket, new_socket));
+        threads.push_back(thread(new_connection, new_socket, ip_address, connections));
     }
     
     for(int i = 0; i < (int)threads.size(); i++)
         threads[i].join();
 
-    printf("Hello message sent\n"); 
+    printf("Server exiting\n"); 
     return 0;   
 }

@@ -152,7 +152,7 @@ string FileSystem::rm(string file_name, bool recursive) {
         }
         
         delete_file(entry);
-        return "\n";
+        return "";
     }
     catch(string err) {
         return file_name + " not found\n";
@@ -223,7 +223,7 @@ string FileSystem::mkfile(string file_name) {
         File file(file_name);
         file.create();
         current_dir.add_entry(file_name, file.file_start, false, true);
-        return "\n";
+        return "";
     }
 }
 
@@ -269,8 +269,8 @@ string FileSystem::run(string command) {
         else
             out_string += rm(tokens[2], true);
     }
-    else if (!tokens[0].compare("rm") && tokens[1].compare("-r")) {
-        if (tokens.size() < 2 || tokens[1].size() == 0)
+    else if (tokens.size() > 1 && !tokens[0].compare("rm") && tokens[1].compare("-r")) {
+        if (tokens[1].size() == 0)
             out_string += "Invalid Command! for help type 'man'\n";
         else
             out_string += rm(tokens[1]);
@@ -314,7 +314,10 @@ string FileSystem::run(string command) {
         out_string += man();
     }
     else if (!tokens[0].compare("mkfile")) {
-        out_string += mkfile(tokens[1]);
+        if (tokens.size() < 2 || tokens[1].size() == 0)
+            out_string += "Invalid Command! for help type 'man'\n";
+        else
+            out_string += mkfile(tokens[1]);
     }
     else if (!tokens[0].compare("open") && tokens.size() > 1) {
         open(tokens[1]);
@@ -343,17 +346,8 @@ string FileSystem::run(string command) {
         string file_contents;
         
         int start;
-        if (tokens.size() == 1) {
-            start = 0;
-            *out_stream << "Enter contents of file:\n";
-            getline(cin, file_contents);
-        }
-        else if (tokens.size() == 2) {
-            start = stoi(tokens[1]);
-            *out_stream << "Enter contents of file:\n";
-            getline(cin, file_contents);
-        }
-        else if (tokens.size() >= 3) {
+        
+        if (tokens.size() >= 3) {
             if (!tokens[1].compare("-s")) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
             }
@@ -371,11 +365,7 @@ string FileSystem::run(string command) {
     else if (!tokens[0].compare("append")) {
         string file_contents;
 
-        if (tokens.size() == 1) {
-            out_string += "Enter contents of file:\n";
-            getline(cin, file_contents);
-        }
-        else if (tokens.size() >= 2) {
+        if (tokens.size() >= 2) {
             if (!tokens[1].compare("-s")) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
             }
@@ -410,7 +400,7 @@ string FileSystem::run(string command) {
     {
         out_string += "Invalid Command! for help type 'man'\n";
     }
-    return out_string+">> ";
+    return out_string;
 }
 
 void FileSystem::run_script(ifstream& file) {

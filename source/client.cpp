@@ -13,8 +13,9 @@ using namespace std;
 int main(int argc, char const *argv[]) 
 { 
     int sock = 0; 
+    string server_ip;
     struct sockaddr_in serv_addr; 
-    char buffer[1024] = {0}; 
+    char buffer[1500] = {0}; 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) { 
         printf("\n Socket creation error \n"); 
         return -1; 
@@ -22,9 +23,13 @@ int main(int argc, char const *argv[])
    
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_port = htons(PORT); 
-       
+    
+    cout << "Enter Server IP: ";
+    getline(cin, server_ip);
+    cout << "Connecting to server at " << server_ip << " Port " << PORT << endl;
+
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, server_ip.c_str(), &serv_addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
@@ -36,20 +41,21 @@ int main(int argc, char const *argv[])
         return -1; 
     } 
 
-    // char buffer[1024] = {0}; 
-    cout << ">> ";
+    
     while(true) {
-        string command;
-        getline(cin, command);
-        if (!command.compare("exit"))
-            exit(-1);
-        else if (command.length() > 0) {
-            const char * str = command.c_str();
+        if (read(sock, buffer, 1500) > 0)
+            cout << buffer;
+
+        string input;
+        getline(cin, input);
+        if (!input.compare("exit"))
+            break;
+        else if (input.length() > 0) {
+            const char * str = input.c_str();
             send(sock, str, strlen(str), 0);
-            if (read(sock, buffer, 1024) > 0)
-                cout << buffer;
             bzero(buffer, sizeof(buffer));
         }
     }
+    cout << "Connection closed" << endl;
     return 0; 
 } 
