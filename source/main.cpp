@@ -20,6 +20,7 @@ int main(int argc, char const *argv[]) {
 				exit(-1);
 			else {
 				cout << file_system.run(command);
+				cout << ">> ";
 			}
 		}
 	}

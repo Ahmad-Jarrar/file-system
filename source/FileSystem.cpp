@@ -53,10 +53,9 @@ string FileSystem::mkdir(string file_name) {
     return "";    
 }
 
-void FileSystem::open(string file_name) {
+string FileSystem::open(string file_name) {
     if(file_open) {
-        *out_stream << "A file is already open. Close it to open new file\n";
-        return;
+        return "A file is already open. Close it to open new file\n";
     }
     try {
         Entry entry = current_dir.find_entry(file_name);
@@ -65,18 +64,20 @@ void FileSystem::open(string file_name) {
             file_open = true;
         }
         else
-            *out_stream << "File of name " << file_name << " not found\n";
+            return "File of name " + file_name + " not found\n";
     }
     catch (int err) {
-        *out_stream << file_name << " not found\n";
+        return file_name + " not found\n";
     }
+    return "";
 }
 
-void FileSystem::close() {
+string FileSystem::close() {
     if(file_open) {
         delete current_file;
         file_open = false;
     }
+    return "";
 }
 
 string FileSystem::read(int start, int size) {
@@ -86,24 +87,33 @@ string FileSystem::read(int start, int size) {
         return "No file opened\n";
 }
 
-void FileSystem::write(string file_contents, int start) {
+string FileSystem::write(string file_contents, int start) {
     if(file_open) {
         try {
            current_file->write(file_contents, start);
         }
         catch(const char* err) {
-            *out_stream << err << endl;
+            return *err + "\n";
         }
     }
     else
-        *out_stream << "No file opened\n";
+        return "No file opened\n";
+    return "";
 }
 
-void FileSystem::append(string file_contents) {
+string FileSystem::append(string file_contents) {
     if(file_open)
-        current_file->write(file_contents, (int)current_file->read().length());
+    {   
+        try {
+           current_file->write(file_contents, (int)current_file->read().length());
+        }
+        catch(const char* err) {
+            return *err + "\n";
+        }
+    }
     else
-        *out_stream << "No file opened\n";
+        return "No file opened\n";
+    return "";
 }
 
 string FileSystem::pwd() {
@@ -122,10 +132,8 @@ Directory FileSystem::cd(string dir_name, Directory dir){
         return Directory(entry);
     }
     catch(int err) {
-        *out_stream << dir_name << " does not exist\n";
-        throw(-1);
+        throw(dir_name + " does not exist\n");
     }
-    
 }
 
 string FileSystem::ls() {
@@ -159,7 +167,7 @@ string FileSystem::rm(string file_name, bool recursive) {
     }
 }
 
-void FileSystem::mv(string source, string destination) {
+string FileSystem::mv(string source, string destination) {
 
     Directory source_dir;
     Directory dest_dir;
@@ -194,8 +202,8 @@ void FileSystem::mv(string source, string destination) {
         try {
             source_dir = cd(source_path[i], source_dir);
         }
-        catch(int i) {
-            return;
+        catch(string err) {
+            return err;
         }
     }
 
@@ -203,8 +211,8 @@ void FileSystem::mv(string source, string destination) {
         try{
             dest_dir = cd(dest_path[i], dest_dir);
         }
-        catch(int i) {
-            return;
+        catch(string err) {
+            return err;
         }
     }
 
@@ -212,6 +220,7 @@ void FileSystem::mv(string source, string destination) {
     entry.clear();  entry.is_occupied = true;
     entry.file_name = dest_path[dest_path.size()-1];
     dest_dir.add_entry(entry);
+    return "";
 }
 
 string FileSystem::mkfile(string file_name) {
@@ -294,8 +303,8 @@ string FileSystem::run(string command) {
             }
             current_dir = curr_dir;
         }
-        catch(int i) {
-            out_string += "\n";
+        catch(string err) {
+            out_string += err;
         }
     }
     else if (!tokens[0].compare("pwd")) {
@@ -320,10 +329,10 @@ string FileSystem::run(string command) {
             out_string += mkfile(tokens[1]);
     }
     else if (!tokens[0].compare("open") && tokens.size() > 1) {
-        open(tokens[1]);
+        out_string += open(tokens[1]);
     }
     else if (!tokens[0].compare("close")) {
-        close();
+        out_string += close();
     }
     else if (!tokens[0].compare("read")) {
         int start, size;
@@ -360,7 +369,7 @@ string FileSystem::run(string command) {
             }
         }
 
-        write(file_contents, start);
+        out_string += write(file_contents, start);
     }
     else if (!tokens[0].compare("append")) {
         string file_contents;
@@ -374,7 +383,7 @@ string FileSystem::run(string command) {
             }
         }
 
-        append(file_contents);
+        out_string += append(file_contents);
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
@@ -386,7 +395,14 @@ string FileSystem::run(string command) {
         if (!file_open) {
             out_string += "No file open\n";
         }
-        current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
+        try
+        {
+            current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
+        }
+        catch(string err)
+        {
+          out_string += err;   
+        }
     }
     else if (!tokens[0].compare("mv")) {
         if (tokens.size() < 2 || !tokens[1].size() || tokens[2].size())
@@ -394,7 +410,7 @@ string FileSystem::run(string command) {
             out_string += "Invalid Command! for help type 'man'\n";
         }
         
-        mv(tokens[1], tokens[2]);
+        out_string += mv(tokens[1], tokens[2]);
     }
     else
     {
@@ -410,7 +426,7 @@ void FileSystem::run_script(ifstream& file) {
 		if (!command.compare("exit"))
 			exit(-1);
 		else {
-			run(command);
+            *out_stream << run(command);
 		}
 	}
 }
@@ -419,7 +435,7 @@ void thread_wrapper(FileSystem file_system, string file_name) {
     struct stat buffer; 
     
     ifstream file(file_name);  
-    ofstream out_file("out_" + file_name);
+    ofstream out_file(file_name.substr(0, file_name.size()-4) + "_out.txt");
     file_system.out_stream = &out_file;
     if(!(stat (file_name.c_str(), &buffer) == 0)) {
         out_file << file_name << " does not exists\n";

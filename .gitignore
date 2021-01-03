@@ -4,6 +4,6 @@ test.cpp
 *.dat
 *.sh
 .vscode/
-out_*
+*_out.txt
 server
 client

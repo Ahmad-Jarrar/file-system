@@ -46,7 +46,7 @@ void File::write(string file_contents, int start) {
 
     // might need to modify this condition to check for position within last block
     if (start > (total_blocks << 8) || start < 0) {
-        throw("Invalid start address");
+        throw("Invalid start address\n");
     }
     
     // obtain header that must be written to
@@ -73,7 +73,7 @@ void File::write(string file_contents, int start) {
             blocks[i] = find_empty_block(blocks[i - 1]);
         }
         catch(int err) {
-            throw("Not enough free space!");
+            throw("Not enough free space!\n");
             return;
         }
     }
@@ -131,6 +131,5 @@ void File::move_within_file(int start, int size, int target) {
     else {
         file_contents.replace(target, (int)move_string.length(), move_string);
     }
-
     write(file_contents, 0);
 }

@@ -27,4 +27,4 @@ client: $(OBJ_DIR)/client.o
 	$(CXX) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f $(OBJ_DIR)/*.o filesystem *.dat out_* server
+	rm -f $(OBJ_DIR)/*.o filesystem *.dat *_out.txt */*_out.txt server client

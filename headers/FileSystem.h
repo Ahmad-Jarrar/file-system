@@ -19,18 +19,18 @@ public:
     string ls();              // Done
     string rm(string);        // Done
     string rm(string, bool);  // Done
-    void mv(string, string);// TODO
+    string mv(string, string);// Done
     string pwd();             // done
     string view();
     string map(string);
     string man();
     
     string mkfile(string);    // Done
-    void open(string);      // done
-    void close();           // done
+    string open(string);      // done
+    string close();           // done
     string read(int start, int size);
-    void write(string, int);
-    void append(string);
+    string write(string, int);
+    string append(string);
 };
 
 void thread_wrapper(FileSystem, string);
