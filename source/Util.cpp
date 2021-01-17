@@ -1,19 +1,27 @@
-// #include <bitset>
 #include "../headers/Util.h"
 
 using namespace std;
 
+
+mutex file_mtx;
+mutex new_block_mtx;
+mutex file_status_mtx;
 
 /*=========================================================================================================================
                                             HEADER CLASS DEFINITIONS
 =========================================================================================================================*/
 
 Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_dir) {
+    Header(block_no, prev, next, is_occupied, is_dir, 0);
+}
+
+Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_dir, char mode) {
 	this->is_dir = is_dir;
 	this->block_no = block_no;
 	this->prev = prev;
 	this->next = next;
 	this->is_occupied = is_occupied;
+    this->mode = mode;
 }
 
 Header::Header(Header* header) {
@@ -22,6 +30,7 @@ Header::Header(Header* header) {
 	this->is_occupied = header->is_occupied;
 	this->next = header->next;
 	this->prev = header->prev;
+	this->mode = header->mode;
 }
 
 Header::Header(int block_no) {
@@ -30,12 +39,9 @@ Header::Header(int block_no) {
 }
 
 void Header::write(int block_no) {
-	const char buffer[2] = { this->prev, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
-	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-
-	file.seekp(block_no << 8);
-	file.write(buffer, 2);
-	file.close();
+	const char buffer[2] = {(char) (this->prev | mode << 6), 
+                            (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
+    write_to_file(block_no << 8, buffer, 2);
 }
 
 void Header::write() {
@@ -43,18 +49,37 @@ void Header::write() {
 }
 
 void Header::read(int block_no) {
-	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-	file.seekg(block_no << 8);
-
-	file >> prev;
-	file >> next;
+    char tmp[2];
+    read_from_file(block_no << 8, tmp, 2);
+    
+	prev = tmp[0];
+	next = tmp[1];
 
 	is_occupied = (bool)(next & IS_OCCUPIED);
 	is_dir = (bool)(next & IS_DIR);
-    this->block_no = block_no;
 	next = next & H_NEXT_MASK;
+    
+    
+	mode = (prev & MODE_MASK) >> 6;
+	prev = prev & H_PREV_MASK;
 
-	file.close();
+    this->block_no = block_no;
+}
+
+void Header::read() {
+    read(block_no);
+}
+
+void Header::open(bool mode) {
+    this->mode = mode;
+    write();
+}
+void Header::close() {
+    this->mode = false;
+    write();
+}
+int Header::status() {
+    return mode;
 }
 
 string Header::stringify() {
@@ -96,29 +121,19 @@ void Entry::read(int entry_no, int block_no) {
 
 void Entry::read(int entry_no) {
     this->entry_no = entry_no;
-	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-	file.seekg((block_no << 8) + 2 + entry_no*31);
-    char buffer[30];
-
-	file.read(buffer, 30);
-	file.read(&file_start, 1);
+    char buffer[31];
+    read_from_file((block_no << 8) + 2 + entry_no*31, buffer, 31);
 
 	is_occupied = (bool)(file_start & IS_OCCUPIED);
 	is_dir = (bool)(file_start & IS_DIR);
 	file_start = file_start & H_NEXT_MASK;
-    file_name = *(new string(buffer));
+    file_name = string(buffer).substr(0, 30);
     file_name = trim(file_name);
-
-	file.close();
 }
 
 void Entry::write() {
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp((((int)block_no) << 8) + 2 + entry_no*31);
-    
     stringify();
-    file.write(buffer, 31);
-    file.close();
+    write_to_file((((int)block_no) << 8) + 2 + entry_no*31, buffer, 31);
 }
 
 void Entry::clear() {
@@ -164,10 +179,6 @@ string trim(string& str) {
     return str.substr(strBegin, strRange);
 }
 
-void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-
-}
-
 string escape(string str) {
     string to = "";
     size_t start_pos = 0;
@@ -197,20 +208,13 @@ string escape(string str) {
 
 void write_block(Header header, string file_contents, char block_no, bool is_last) {
     header.write(block_no);
-
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp((((int)block_no) << 8) + 2);
-    file << file_contents;
-    if(is_last) file << '\0';
-    file.close();
+    file_contents = is_last ? file_contents+'\0':file_contents;
+    write_to_file((((int)block_no) << 8) + 2,file_contents.c_str());
 }
 
 string read_block_contents(char block_no, char start) {
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekg((((int)block_no) << 8) + 2 + start);
     char buffer[BLOCK_SIZE - 2];
-    
-    file.read(buffer, BLOCK_SIZE - 2);
+    read_from_file((((int)block_no)<<8)+start+2, buffer, BLOCK_SIZE-2);
     return string(buffer);
 }
 
@@ -302,7 +306,8 @@ string list_entry_helper(int block_no, bool first_block) {
     return list_string;
 }
 
-void allocate_extra_block(Header first_header) {
+int allocate_extra_block(Header first_header) {
+    new_block_mtx.lock();
 	int new_block_no = find_empty_block(0);
 	Header last_header = find_last_header(first_header);
 	
@@ -313,15 +318,13 @@ void allocate_extra_block(Header first_header) {
 
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
+    new_block_mtx.unlock();
+    return new_last_header.block_no;
 }
 
 void clean_block(char block_no) {
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp((((int)block_no) << 8));
-    
-    for(int i = 0; i < BLOCK_SIZE; i++)
-        file << '\0';
-    file.close();
+    char clear[BLOCK_SIZE] = {0};
+    write_to_file((((int)block_no) << 8), clear, BLOCK_SIZE);
 }
 
 void clear_subsequent_blocks(Header header) {
@@ -347,7 +350,14 @@ int count_blocks(Header header) {
 
 void delete_file(Entry entry) {
     Header first_header = Header(entry.file_start);
-
+    file_status_mtx.lock();
+    if (first_header.status())
+    {
+        file_status_mtx.unlock();
+        throw("Abort! Could not complete operation, " + entry.file_name + "does not exist or in use\n");
+    }
+    file_status_mtx.unlock();
+    
     while (true) {
         first_header.is_occupied = false;
         first_header.write();
@@ -395,4 +405,31 @@ string get_manual() {
 
         + "--------------------------------------------------------------------------------------------------------------------------\n";
     return s;
+}
+
+void write_to_file(int offset,const char* str, int length) {
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp(offset);
+    file.write(str, length);
+    file.close();
+    file_mtx.unlock();
+}
+
+void write_to_file(int offset,const char* str) {
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp(offset);
+    file << str;
+    file.close();
+    file_mtx.unlock();
+}
+
+void read_from_file(int offset,char* buffer, int length) {
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp(offset);
+    file.read(buffer, length);
+    file.close();
+    file_mtx.unlock();
 }

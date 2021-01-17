@@ -7,4 +7,9 @@
 #define H_NEXT_MASK 0x003F
 #define IS_DIR      0x0040
 #define IS_OCCUPIED 0x0080
+#define MODE_MASK   0xc000
+#define CLOSE       0
+#define READ        1
+#define WRITE       2
+#define UNUSED      3
 #define MAX_INT 16385

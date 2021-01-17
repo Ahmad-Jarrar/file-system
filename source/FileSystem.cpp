@@ -43,17 +43,18 @@ string FileSystem::mkdir(string file_name) {
         return "Folder already exists\n";
     }
     catch(int err) {
+        new_block_mtx.lock();
         char new_block = (char)find_empty_block(0);
         Header header(new_block, 0, 0, true, true);
         Directory dir(new_block, file_name, true, header, current_dir.entrify());
         dir.write();
-
+        new_block_mtx.unlock();
         current_dir.add_entry(file_name, new_block, true, true);
     }
     return "";    
 }
 
-string FileSystem::open(string file_name) {
+string FileSystem::open(string file_name, string mode) {
     if(file_open) {
         return "A file is already open. Close it to open new file\n";
     }
@@ -69,15 +70,30 @@ string FileSystem::open(string file_name) {
     catch (int err) {
         return file_name + " not found\n";
     }
+    try
+    {
+        if (mode.compare("-r"))
+            current_file->open(READ);
+        else if (!mode.compare("-w"))
+            current_file->open(WRITE);
+    }
+    catch(string str)
+    {  
+        file_open = false;
+        delete current_file;
+        return str;
+    }
     return "";
 }
 
 string FileSystem::close() {
     if(file_open) {
+        current_file->close();
         delete current_file;
         file_open = false;
+        return "";
     }
-    return "";
+    return "No open file!\n";
 }
 
 string FileSystem::read(int start, int size) {
@@ -163,7 +179,7 @@ string FileSystem::rm(string file_name, bool recursive) {
         return "";
     }
     catch(string err) {
-        return file_name + " not found\n";
+        return file_name + "\n";
     }
 }
 
@@ -171,7 +187,6 @@ string FileSystem::mv(string source, string destination) {
 
     Directory source_dir;
     Directory dest_dir;
-
     vector<string> source_path = split_string(source, '/');
     vector<string> dest_path = split_string(destination, '/');
 
@@ -184,7 +199,6 @@ string FileSystem::mv(string source, string destination) {
     {
         source_dir = Directory(&current_dir);
     }
-    
 
     if (destination[0] == '/')
     {
@@ -195,8 +209,6 @@ string FileSystem::mv(string source, string destination) {
     {
         dest_dir = Directory(&current_dir);
     }
-    
-    
 
     for(int i = 0; i < (int)source_path.size()-1; i++) {
         try {
@@ -233,6 +245,9 @@ string FileSystem::mkfile(string file_name) {
         file.create();
         current_dir.add_entry(file_name, file.file_start, false, true);
         return "";
+    }
+    catch(string err) {
+        return err + "\n";
     }
 }
 
@@ -328,8 +343,8 @@ string FileSystem::run(string command) {
         else
             out_string += mkfile(tokens[1]);
     }
-    else if (!tokens[0].compare("open") && tokens.size() > 1) {
-        out_string += open(tokens[1]);
+    else if (!tokens[0].compare("open") && tokens.size() > 2) {
+        out_string += open(tokens[2], tokens[1]);
     }
     else if (!tokens[0].compare("close")) {
         out_string += close();

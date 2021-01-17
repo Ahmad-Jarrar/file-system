@@ -7,23 +7,33 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
+#include <mutex>
 #include "config.h"
 
-
 using namespace std;
+
+extern mutex file_mtx;
+extern mutex new_block_mtx;
+extern mutex file_status_mtx;
 
 class Header {
 public:
 	char prev, next, block_no;
 	bool is_occupied, is_dir;
+	char mode;
 	Header() {}
 	Header(Header*);
 	Header(char, char, char, bool, bool);
+	Header(char, char, char, bool, bool, char);
 	Header(int);
 	string stringify();
 	void write(int);
 	void write();
 	void read(int);
+	void read();
+	void open(bool mode);
+	void close();
+	int status();
 };
 
 class Entry {
@@ -68,7 +78,7 @@ bool is_empty_helper(int, bool);
 
 string list_entry_helper(int, bool);
 
-void allocate_extra_block(Header);
+int allocate_extra_block(Header);
 
 void clean_block(char block_no);
 
@@ -81,3 +91,9 @@ void delete_file(Entry);
 string get_manual();
 
 vector<string> split_string(string, char);
+
+void write_to_file(int,const char*, int);
+
+void write_to_file(int,const char*);
+
+void read_from_file(int,char*, int);

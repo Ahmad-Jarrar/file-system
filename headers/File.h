@@ -6,7 +6,7 @@ public:
     char file_start;
     string file_name;
     bool is_dir;
-    // int total_blocks;
+    int mode;
     Header first_header;
 
 
@@ -17,11 +17,12 @@ public:
 
     void create();
 
-    void open(string);
+    void open(int);
+    void close();
+    int status();
 
     void write(string);
     void write(string, int);
-    void write(string, bool is_new);
     
     string read();
     string read(int);

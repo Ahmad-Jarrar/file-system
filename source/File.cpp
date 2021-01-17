@@ -24,10 +24,36 @@ File::File(Entry entry) {
     this->first_header.read(this->file_start);
 }
 
+void File::open(int mode) {
+    file_status_mtx.lock();
+    if (first_header.status() >= WRITE) {
+        file_status_mtx.unlock();
+        throw("Cannot open. File already opened in write mode\n");
+    }
+    else if (first_header.status() != CLOSE) {
+        file_status_mtx.unlock();
+        throw("Cannot open in write mode. File already in use.\n");
+    }
+    first_header.open(mode);
+    file_status_mtx.unlock();
+    this->mode = mode;
+}
+
+void File::close() {
+    first_header.close();
+}
+
 void File::create() {
+    new_block_mtx.lock();
     file_start = find_empty_block(0);
     first_header.read(file_start);
+    first_header.is_occupied = true;
+    first_header.is_dir = false;
+    first_header.mode = WRITE;
+    first_header.write();
+    new_block_mtx.unlock();
     write("");
+    close();
 }
 
 void File::write(string file_contents) {
@@ -36,18 +62,20 @@ void File::write(string file_contents) {
 
 void File::write(string file_contents, int start) {
     // determine which block no. is to be written to
-    // prepend relevant contents of that block to new contents
+    // prepend relevant content of that block to new content
     // unoccupy that and all subsequent blocks
     // allocate and write to new blocks according to old strategy
+
+    if (mode < WRITE)
+        throw("Do not have write permission!\n");
 
     file_contents = escape(file_contents);
 
     int total_blocks = count_blocks(first_header);
 
     // might need to modify this condition to check for position within last block
-    if (start > (total_blocks << 8) || start < 0) {
+    if (start > (total_blocks << 8) || start < 0)
         throw("Invalid start address\n");
-    }
     
     // obtain header that must be written to
     int start_block_no = start / (BLOCK_SIZE - 2);
@@ -70,7 +98,7 @@ void File::write(string file_contents, int start) {
     blocks[0] = header.block_no;
     for(int i = 1; i < blocks_required; i++) {
         try {
-            blocks[i] = find_empty_block(blocks[i - 1]);
+            blocks[i] = allocate_extra_block(&first_header);
         }
         catch(int err) {
             throw("Not enough free space!\n");
@@ -81,7 +109,6 @@ void File::write(string file_contents, int start) {
     Header headers[blocks_required];
     for(int i = 0; i < blocks_required; i++) {
         headers[i].is_occupied = true; headers[i].is_dir = false;
-
         headers[i].prev = i > 0 ? (char)blocks[i - 1] : header.prev;
         headers[i].next = i < blocks_required - 1 ? (char)blocks[i + 1] : 0;
 
@@ -91,6 +118,9 @@ void File::write(string file_contents, int start) {
 }
 
 string File::read(int start, int size) {
+    if (mode < READ)
+        return "Do not have read permission";
+
     int start_block_no = start / (BLOCK_SIZE - 2);
     Header header(&first_header);
     header = find_header_no(header, start_block_no);

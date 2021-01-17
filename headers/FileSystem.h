@@ -26,7 +26,7 @@ public:
     string man();
     
     string mkfile(string);    // Done
-    string open(string);      // done
+    string open(string, string);      // done
     string close();           // done
     string read(int start, int size);
     string write(string, int);
