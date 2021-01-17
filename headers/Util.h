@@ -92,8 +92,8 @@ string get_manual();
 
 vector<string> split_string(string, char);
 
-void write_to_file(int,const char*, int);
+// void write_to_file(int,const char*, int);
 
-void write_to_file(int,const char*);
+// void write_to_file(int,const char*);
 
-void read_from_file(int,char*, int);
+// void read_from_file(int,char*, int);

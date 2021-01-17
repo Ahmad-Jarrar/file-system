@@ -72,7 +72,8 @@ string FileSystem::open(string file_name, string mode) {
     }
     try
     {
-        if (mode.compare("-r"))
+        cout << mode;
+        if (!mode.compare("-r"))
             current_file->open(READ);
         else if (!mode.compare("-w"))
             current_file->open(WRITE);

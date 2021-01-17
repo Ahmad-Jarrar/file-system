@@ -41,7 +41,14 @@ Header::Header(int block_no) {
 void Header::write(int block_no) {
 	const char buffer[2] = {(char) (this->prev | mode << 6), 
                             (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
-    write_to_file(block_no << 8, buffer, 2);
+    // write_to_file(block_no << 8, buffer, 2);
+    // const char buffer[2] = { this->prev, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
+	file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+	file.seekp(block_no << 8);
+	file.write(buffer, 2);
+	file.close();
+    file_mtx.unlock();
 }
 
 void Header::write() {
@@ -49,11 +56,17 @@ void Header::write() {
 }
 
 void Header::read(int block_no) {
-    char tmp[2];
-    read_from_file(block_no << 8, tmp, 2);
-    
-	prev = tmp[0];
-	next = tmp[1];
+    // char tmp[2];
+    // read_from_file(block_no << 8, tmp, 2);
+	// prev = tmp[0];
+	// next = tmp[1];
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+	file.seekg(block_no << 8);
+	file >> prev;
+	file >> next;
+    file.close();
+    file_mtx.unlock();
 
 	is_occupied = (bool)(next & IS_OCCUPIED);
 	is_dir = (bool)(next & IS_DIR);
@@ -121,19 +134,33 @@ void Entry::read(int entry_no, int block_no) {
 
 void Entry::read(int entry_no) {
     this->entry_no = entry_no;
-    char buffer[31];
-    read_from_file((block_no << 8) + 2 + entry_no*31, buffer, 31);
-
+    // char buffer[31];
+    // read_from_file((block_no << 8) + 2 + entry_no*31, buffer, 31);
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+	file.seekg((block_no << 8) + 2 + entry_no*31);
+    char buffer[30];
+	file.read(buffer, 30);
+	file.read(&file_start, 1);
+    file.close();
+    file_mtx.unlock();
 	is_occupied = (bool)(file_start & IS_OCCUPIED);
 	is_dir = (bool)(file_start & IS_DIR);
 	file_start = file_start & H_NEXT_MASK;
-    file_name = string(buffer).substr(0, 30);
+    file_name = *(new string(buffer));
+    // file_name = string(buffer).substr(0, 30);
     file_name = trim(file_name);
 }
 
 void Entry::write() {
     stringify();
-    write_to_file((((int)block_no) << 8) + 2 + entry_no*31, buffer, 31);
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp((((int)block_no) << 8) + 2 + entry_no*31);
+    file.write(buffer, 31);
+    file.close();
+    file_mtx.unlock();
+    // write_to_file((((int)block_no) << 8) + 2 + entry_no*31, buffer, 31);
 }
 
 void Entry::clear() {
@@ -208,13 +235,27 @@ string escape(string str) {
 
 void write_block(Header header, string file_contents, char block_no, bool is_last) {
     header.write(block_no);
-    file_contents = is_last ? file_contents+'\0':file_contents;
-    write_to_file((((int)block_no) << 8) + 2,file_contents.c_str());
+    // file_contents = is_last ? file_contents+'\0':file_contents;
+    // write_to_file((((int)block_no) << 8) + 2,file_contents.c_str());
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp((((int)block_no) << 8) + 2);
+    file << file_contents;
+    if(is_last) file << '\0';
+    file.close();
+    file_mtx.unlock();
 }
 
 string read_block_contents(char block_no, char start) {
     char buffer[BLOCK_SIZE - 2];
-    read_from_file((((int)block_no)<<8)+start+2, buffer, BLOCK_SIZE-2);
+    // read_from_file((((int)block_no)<<8)+start+2, buffer, BLOCK_SIZE-2);
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekg((((int)block_no) << 8) + 2 + start);
+    file.read(buffer, BLOCK_SIZE - 2);
+    file.close();
+    file_mtx.unlock();
+
     return string(buffer);
 }
 
@@ -323,8 +364,16 @@ int allocate_extra_block(Header first_header) {
 }
 
 void clean_block(char block_no) {
-    char clear[BLOCK_SIZE] = {0};
-    write_to_file((((int)block_no) << 8), clear, BLOCK_SIZE);
+    // char clear[BLOCK_SIZE] = {0};
+    // write_to_file((((int)block_no) << 8), clear, BLOCK_SIZE);
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+    file.seekp((((int)block_no) << 8));
+    
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        file << '\0';
+    file.close();
+    file_mtx.unlock();
 }
 
 void clear_subsequent_blocks(Header header) {
@@ -407,29 +456,29 @@ string get_manual() {
     return s;
 }
 
-void write_to_file(int offset,const char* str, int length) {
-    file_mtx.lock();
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp(offset);
-    file.write(str, length);
-    file.close();
-    file_mtx.unlock();
-}
+// void write_to_file(int offset,const char* str, int length) {
+//     file_mtx.lock();
+//     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+//     file.seekp(offset);
+//     file.write(str, length);
+//     file.close();
+//     file_mtx.unlock();
+// }
 
-void write_to_file(int offset,const char* str) {
-    file_mtx.lock();
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp(offset);
-    file << str;
-    file.close();
-    file_mtx.unlock();
-}
+// void write_to_file(int offset,const char* str) {
+//     file_mtx.lock();
+//     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+//     file.seekp(offset);
+//     file << str;
+//     file.close();
+//     file_mtx.unlock();
+// }
 
-void read_from_file(int offset,char* buffer, int length) {
-    file_mtx.lock();
-    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-    file.seekp(offset);
-    file.read(buffer, length);
-    file.close();
-    file_mtx.unlock();
-}
+// void read_from_file(int offset,char* buffer, int length) {
+//     file_mtx.lock();
+//     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
+//     file.seekp(offset);
+//     file.read(buffer, length);
+//     file.close();
+//     file_mtx.unlock();
+// }
