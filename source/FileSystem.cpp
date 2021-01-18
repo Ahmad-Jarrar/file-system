@@ -54,6 +54,19 @@ string FileSystem::mkdir(string file_name) {
     return "";    
 }
 
+void propogate_mode(Directory dir, bool inc) {
+
+    if (inc)
+        dir.first_header.set_mode(true);
+    else
+        dir.first_header.clear_mode();
+
+    if (dir.first_header.block_no == 0)
+        return;
+    
+    propogate_mode(dir.parent_dir, inc);
+}
+
 string FileSystem::open(string file_name, string mode) {
     if(file_open) {
         return "A file is already open. Close it to open new file\n";
@@ -72,6 +85,9 @@ string FileSystem::open(string file_name, string mode) {
             current_file = new File(entry);
             current_file->open(is_read);
             file_open = true;
+            mode_mtx.lock();
+            propogate_mode(current_dir, true);
+            mode_mtx.unlock();
         }
         else
             return "File of name " + file_name + " not found\n";
@@ -90,6 +106,9 @@ string FileSystem::close() {
         current_file->close();
         delete current_file;
         file_open = false;
+        mode_mtx.lock();
+        propogate_mode(current_dir, false);
+        mode_mtx.unlock();
     }
     return "";
 }
@@ -177,7 +196,10 @@ string FileSystem::rm(string file_name, bool recursive) {
         return "";
     }
     catch(string err) {
-        return file_name + " not found\n";
+        return err;
+    }
+    catch(int err) {
+        return file_name + " not found!\n";
     }
 }
 
@@ -229,8 +251,22 @@ string FileSystem::mv(string source, string destination) {
             return err;
         }
     }
+    Entry entry;
+    try
+    {
+        entry = source_dir.find_entry(source_path[source_path.size() - 1]);
+    }
+    catch(int err)
+    {
+        return source + " not found!\n";
+    }
+    mode_mtx.lock();
+    if (Header(entry.file_start).get_mode()) {
+        mode_mtx.unlock();
+        return source + " in use!\n";
+    }
+    mode_mtx.unlock();
 
-    Entry entry = source_dir.find_entry(source_path[source_path.size() - 1]);
     entry.clear();  entry.is_occupied = true;
     entry.file_name = dest_path[dest_path.size()-1];
     dest_dir.add_entry(entry);
@@ -282,13 +318,13 @@ string FileSystem::run(string command) {
     if (tokens.size() == 0)
         out_string += "";
 
-    if (!tokens[0].compare("ls") && tokens.size() < 2) {
+    else if (!tokens[0].compare("ls") && tokens.size() < 2) {
         out_string += ls();
     }
     else if (!tokens[0].compare("ls")  && !tokens[1].compare("-a")) {
         out_string += current_dir.list_structure();
     }
-    else if (!tokens[0].compare("mkdir")) {
+    else if (!tokens[0].compare("mkdir") && tokens.size() > 1) {
         out_string += mkdir(tokens[1]);
     }
     else if (tokens.size() > 2 && !tokens[0].compare("rm") && !tokens[1].compare("-r")) {
@@ -424,7 +460,7 @@ string FileSystem::run(string command) {
         }
     }
     else if (!tokens[0].compare("mv")) {
-        if (tokens.size() < 2 || !tokens[1].size() || tokens[2].size())
+        if (tokens.size() < 2 || !tokens[1].size() || !tokens[2].size())
         {
             out_string += "Invalid Command! for help type 'man'\n";
         }

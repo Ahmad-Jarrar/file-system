@@ -383,8 +383,14 @@ int count_blocks(Header header) {
 }
 
 void delete_file(Entry entry) {
+    mode_mtx.lock();
     Header first_header = Header(entry.file_start);
-
+    if (first_header.get_mode()){
+        mode_mtx.unlock();
+        throw("Abort! cannot delete " + entry.file_name + " in use.\n");
+    }
+    mode_mtx.unlock();
+    
     while (true) {
         first_header.is_occupied = false;
         first_header.write();

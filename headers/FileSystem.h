@@ -33,4 +33,6 @@ public:
     string append(string);
 };
 
+void propogate_mode(Directory, bool);
+
 void thread_wrapper(FileSystem, string);

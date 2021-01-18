@@ -37,7 +37,6 @@ void File::create() {
 
 void File::open(bool is_read) {
     mode_mtx.lock();
-    cout << file_name << "is being opened" << endl;
     int mode = first_header.get_mode();
     if (mode < 0) {
         mode_mtx.unlock();

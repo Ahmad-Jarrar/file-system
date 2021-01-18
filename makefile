@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++17 -Wall -g -I.
+CXXFLAGS=-std=c++17 -Wall -g -I -O3.
 
 INC_DIR = ./headers
 SRC_DIR = ./source
