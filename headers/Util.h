@@ -7,10 +7,14 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
+#include <mutex>
 #include "config.h"
 
 
 using namespace std;
+
+extern mutex file_mtx;
+extern mutex allocation_mtx;
 
 class Header {
 public:
@@ -68,7 +72,7 @@ bool is_empty_helper(int, bool);
 
 string list_entry_helper(int, bool);
 
-void allocate_extra_block(Header);
+char allocate_extra_block(Header);
 
 void clean_block(char block_no);
 

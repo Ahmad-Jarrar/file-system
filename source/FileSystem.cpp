@@ -43,11 +43,12 @@ string FileSystem::mkdir(string file_name) {
         return "Folder already exists\n";
     }
     catch(int err) {
+        allocation_mtx.lock();
         char new_block = (char)find_empty_block(0);
         Header header(new_block, 0, 0, true, true);
         Directory dir(new_block, file_name, true, header, current_dir.entrify());
         dir.write();
-
+        allocation_mtx.unlock();
         current_dir.add_entry(file_name, new_block, true, true);
     }
     return "";    

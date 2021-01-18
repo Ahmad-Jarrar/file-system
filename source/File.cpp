@@ -25,8 +25,13 @@ File::File(Entry entry) {
 }
 
 void File::create() {
+    allocation_mtx.lock();
     file_start = find_empty_block(0);
     first_header.read(file_start);
+    first_header.is_occupied = true;
+    first_header.is_dir = false;
+    first_header.write();
+    allocation_mtx.unlock();
     write("");
 }
 
@@ -68,15 +73,17 @@ void File::write(string file_contents, int start) {
     int blocks[blocks_required];
 
     blocks[0] = header.block_no;
-    for(int i = 1; i < blocks_required; i++) {
-        try {
-            blocks[i] = find_empty_block(blocks[i - 1]);
-        }
-        catch(int err) {
-            throw("Not enough free space!\n");
-            return;
+    try {
+        for(int i = 1; i < blocks_required; i++) {
+            blocks[i] = allocate_extra_block(&first_header);
         }
     }
+    catch(int err) {
+        clear_subsequent_blocks(Header(blocks[0]));
+        throw("Not enough free space!\n");
+        return;
+    }
+    
 
     Header headers[blocks_required];
     for(int i = 0; i < blocks_required; i++) {

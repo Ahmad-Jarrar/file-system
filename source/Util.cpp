@@ -3,6 +3,8 @@
 
 using namespace std;
 
+mutex file_mtx;
+mutex allocation_mtx;
 
 /*=========================================================================================================================
                                             HEADER CLASS DEFINITIONS
@@ -31,11 +33,13 @@ Header::Header(int block_no) {
 
 void Header::write(int block_no) {
 	const char buffer[2] = { this->prev, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
-	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
-
+	
+    file_mtx.lock();
+    fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
 	file.seekp(block_no << 8);
 	file.write(buffer, 2);
 	file.close();
+    file_mtx.unlock();
 }
 
 void Header::write() {
@@ -43,18 +47,19 @@ void Header::write() {
 }
 
 void Header::read(int block_no) {
+    file_mtx.lock();
 	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
 	file.seekg(block_no << 8);
-
 	file >> prev;
 	file >> next;
+    file.close();
+    file_mtx.unlock();
 
 	is_occupied = (bool)(next & IS_OCCUPIED);
 	is_dir = (bool)(next & IS_DIR);
-    this->block_no = block_no;
 	next = next & H_NEXT_MASK;
 
-	file.close();
+    this->block_no = block_no;
 }
 
 string Header::stringify() {
@@ -96,29 +101,33 @@ void Entry::read(int entry_no, int block_no) {
 
 void Entry::read(int entry_no) {
     this->entry_no = entry_no;
+
+    file_mtx.lock();
 	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
 	file.seekg((block_no << 8) + 2 + entry_no*31);
     char buffer[30];
 
 	file.read(buffer, 30);
 	file.read(&file_start, 1);
+    file.close();
+    file_mtx.unlock();
 
 	is_occupied = (bool)(file_start & IS_OCCUPIED);
 	is_dir = (bool)(file_start & IS_DIR);
 	file_start = file_start & H_NEXT_MASK;
     file_name = *(new string(buffer));
     file_name = trim(file_name);
-
-	file.close();
 }
 
 void Entry::write() {
+    file_mtx.lock();
+    stringify();
+
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     file.seekp((((int)block_no) << 8) + 2 + entry_no*31);
-    
-    stringify();
     file.write(buffer, 31);
     file.close();
+    file_mtx.unlock();
 }
 
 void Entry::clear() {
@@ -164,10 +173,6 @@ string trim(string& str) {
     return str.substr(strBegin, strRange);
 }
 
-void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-
-}
-
 string escape(string str) {
     string to = "";
     size_t start_pos = 0;
@@ -198,19 +203,23 @@ string escape(string str) {
 void write_block(Header header, string file_contents, char block_no, bool is_last) {
     header.write(block_no);
 
+    file_mtx.lock();
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     file.seekp((((int)block_no) << 8) + 2);
     file << file_contents;
     if(is_last) file << '\0';
     file.close();
+    file_mtx.unlock();
 }
 
 string read_block_contents(char block_no, char start) {
+    char buffer[BLOCK_SIZE - 2];
+
+    file_mtx.lock();
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     file.seekg((((int)block_no) << 8) + 2 + start);
-    char buffer[BLOCK_SIZE - 2];
-    
     file.read(buffer, BLOCK_SIZE - 2);
+    file_mtx.unlock();
     return string(buffer);
 }
 
@@ -302,7 +311,8 @@ string list_entry_helper(int block_no, bool first_block) {
     return list_string;
 }
 
-void allocate_extra_block(Header first_header) {
+char allocate_extra_block(Header first_header) {
+    allocation_mtx.lock();
 	int new_block_no = find_empty_block(0);
 	Header last_header = find_last_header(first_header);
 	
@@ -313,15 +323,19 @@ void allocate_extra_block(Header first_header) {
 
 	Header new_last_header = Header(new_block_no, last_header.block_no, 0, last_header.is_occupied, last_header.is_dir);
 	new_last_header.write(new_last_header.block_no);
+
+    allocation_mtx.unlock();
+    return new_last_header.block_no;
 }
 
 void clean_block(char block_no) {
+    file_mtx.lock();
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
     file.seekp((((int)block_no) << 8));
-    
     for(int i = 0; i < BLOCK_SIZE; i++)
         file << '\0';
     file.close();
+    file_mtx.unlock();
 }
 
 void clear_subsequent_blocks(Header header) {
