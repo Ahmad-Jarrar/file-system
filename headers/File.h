@@ -21,7 +21,6 @@ public:
 
     void write(string);
     void write(string, int);
-    void write(string, bool is_new);
     
     string read();
     string read(int);

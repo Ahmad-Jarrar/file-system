@@ -5,7 +5,6 @@ public:
     char file_start;
     string file_name;
     bool is_dir;
-    int total_blocks;
     Header first_header;
     Entry parent_dir;
 

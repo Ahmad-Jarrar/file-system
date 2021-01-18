@@ -58,7 +58,6 @@ void Header::read(int block_no) {
 	is_occupied = (bool)(next & IS_OCCUPIED);
 	is_dir = (bool)(next & IS_DIR);
 	next = next & H_NEXT_MASK;
-
     this->block_no = block_no;
 }
 
@@ -340,11 +339,11 @@ void clean_block(char block_no) {
 
 void clear_subsequent_blocks(Header header) {
     while(true) {
-        header.is_occupied = false;
-        header.write();
         if(header.next == 0)
             break;
         header.read(header.next);
+        header.is_occupied = false;
+        header.write();
     }
 }
 
