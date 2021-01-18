@@ -54,14 +54,23 @@ string FileSystem::mkdir(string file_name) {
     return "";    
 }
 
-string FileSystem::open(string file_name) {
+string FileSystem::open(string file_name, string mode) {
     if(file_open) {
         return "A file is already open. Close it to open new file\n";
     }
+    bool is_read;
+    if (!mode.compare("-r"))
+        is_read = true;
+    else if (!mode.compare("-w"))
+        is_read = false;
+    else
+        return "Use -r to read, -w to write";
+
     try {
         Entry entry = current_dir.find_entry(file_name);
         if (!entry.is_dir) {
             current_file = new File(entry);
+            current_file->open(is_read);
             file_open = true;
         }
         else
@@ -70,11 +79,15 @@ string FileSystem::open(string file_name) {
     catch (int err) {
         return file_name + " not found\n";
     }
+    catch (const char* err) {
+        return string(err);
+    }
     return "";
 }
 
 string FileSystem::close() {
     if(file_open) {
+        current_file->close();
         delete current_file;
         file_open = false;
     }
@@ -231,7 +244,12 @@ string FileSystem::mkfile(string file_name) {
     }
     catch(int err) {
         File file(file_name);
-        file.create();
+        try {
+            file.create();
+        }
+        catch(string err) {
+            return err;
+        }
         current_dir.add_entry(file_name, file.file_start, false, true);
         return "";
     }
@@ -329,8 +347,8 @@ string FileSystem::run(string command) {
         else
             out_string += mkfile(tokens[1]);
     }
-    else if (!tokens[0].compare("open") && tokens.size() > 1) {
-        out_string += open(tokens[1]);
+    else if (!tokens[0].compare("open") && tokens.size() > 2) {
+        out_string += open(tokens[2], tokens[1]);
     }
     else if (!tokens[0].compare("close")) {
         out_string += close();

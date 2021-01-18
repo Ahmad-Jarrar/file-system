@@ -15,10 +15,11 @@ using namespace std;
 
 extern mutex file_mtx;
 extern mutex allocation_mtx;
+extern mutex mode_mtx;
 
 class Header {
 public:
-	char prev, next, block_no;
+	char mode, next, block_no;
 	bool is_occupied, is_dir;
 	Header() {}
 	Header(Header*);
@@ -28,6 +29,9 @@ public:
 	void write(int);
 	void write();
 	void read(int);
+	void set_mode(bool);
+	void clear_mode();
+	int get_mode();
 };
 
 class Entry {

@@ -5,15 +5,16 @@ using namespace std;
 
 mutex file_mtx;
 mutex allocation_mtx;
+mutex mode_mtx;
 
 /*=========================================================================================================================
                                             HEADER CLASS DEFINITIONS
 =========================================================================================================================*/
 
-Header::Header(char block_no, char prev, char next, bool is_occupied, bool is_dir) {
+Header::Header(char block_no, char mode, char next, bool is_occupied, bool is_dir) {
 	this->is_dir = is_dir;
 	this->block_no = block_no;
-	this->prev = prev;
+	this->mode = mode;
 	this->next = next;
 	this->is_occupied = is_occupied;
 }
@@ -23,7 +24,7 @@ Header::Header(Header* header) {
 	this->is_dir = header->is_dir;
 	this->is_occupied = header->is_occupied;
 	this->next = header->next;
-	this->prev = header->prev;
+	this->mode = header->mode;
 }
 
 Header::Header(int block_no) {
@@ -32,7 +33,7 @@ Header::Header(int block_no) {
 }
 
 void Header::write(int block_no) {
-	const char buffer[2] = { this->prev, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
+	const char buffer[2] = { this->mode, (char) (this->next | (this->is_occupied ? IS_OCCUPIED : 0) | (this->is_dir ? IS_DIR : 0)) };
 	
     file_mtx.lock();
     fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
@@ -50,7 +51,7 @@ void Header::read(int block_no) {
     file_mtx.lock();
 	fstream file(DATA_FILE, ios::binary | ios::out | ios::in);
 	file.seekg(block_no << 8);
-	file >> prev;
+	file >> mode;
 	file >> next;
     file.close();
     file_mtx.unlock();
@@ -61,22 +62,45 @@ void Header::read(int block_no) {
     this->block_no = block_no;
 }
 
+int Header::get_mode() {
+    read(block_no);
+    return (int)mode;
+}
+
+void Header::set_mode(bool is_read) {
+    get_mode();
+    if (is_read)
+        mode++;
+    else
+        mode--;
+    write();
+}
+
+void Header::clear_mode() {
+    get_mode();
+    if (mode > 0)
+        mode--;
+    else
+        mode++;
+    write();
+}
+
 string Header::stringify() {
 
     char block_no_str[3];
     char block_address_str[5];
     char next_str[3];
-    char prev_str[3];
+    char mode_str[3];
 
     sprintf(block_no_str, "%2d", (int)block_no);
     sprintf(block_address_str, "%4x", (((int)block_no) << 8));
     sprintf(next_str, "%2d", (int)next);
-    sprintf(prev_str, "%2d", (int)prev);
+    sprintf(mode_str, "%2d", (int)mode);
     string bl = block_no_str;
 
 	string header_string = "\n==========Header  info==========\n|Block no.: " + bl + "                 |\n" 
                  + "|Block Address: " + block_address_str + "           |\n" + 
-                 + "|Prev Block: " + prev_str + " Next Block: " + next_str + " |\n" +
+                 + "|Block mode: " + mode_str + " Next Block: " + next_str + " |\n" +
                  + "|is_dir: " + to_string(is_dir) + " is_occupied: " + to_string(is_occupied) + "      |"
                  + "\n================================\n";
     return header_string;

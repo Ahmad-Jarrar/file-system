@@ -5,7 +5,7 @@ class File {
 public:
     char file_start;
     string file_name;
-    bool is_dir;
+    bool is_dir, is_read;
     // int total_blocks;
     Header first_header;
 
@@ -17,7 +17,8 @@ public:
 
     void create();
 
-    void open(string);
+    void open(bool);
+    void close();
 
     void write(string);
     void write(string, int);

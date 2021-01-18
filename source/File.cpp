@@ -30,7 +30,32 @@ void File::create() {
     first_header = Header(file_start, 0, 0, true, false);
     first_header.write();
     allocation_mtx.unlock();
+    open(false);
     write("");
+    close();
+}
+
+void File::open(bool is_read) {
+    mode_mtx.lock();
+    cout << file_name << "is being opened" << endl;
+    int mode = first_header.get_mode();
+    if (mode < 0) {
+        mode_mtx.unlock();
+        throw("Cannot open. File already opened in write mode\n");
+    }
+    else if (!is_read && mode > 0) {
+        mode_mtx.unlock();
+        throw("Cannot open in write mode. File already in use.\n");
+    }
+    first_header.set_mode(is_read);
+    mode_mtx.unlock();
+    this->is_read = is_read;
+}
+
+void File::close() {
+    mode_mtx.lock();
+    first_header.clear_mode();
+    mode_mtx.unlock();
 }
 
 void File::write(string file_contents) {
@@ -42,6 +67,9 @@ void File::write(string file_contents, int start) {
     // prepend relevant contents of that block to new contents
     // unoccupy that and all subsequent blocks
     // allocate and write to new blocks according to old strategy
+
+    if (is_read)
+        throw("File opened in read mode\n");
 
     file_contents = escape(file_contents);
 
@@ -87,7 +115,7 @@ void File::write(string file_contents, int start) {
     for(int i = 0; i < blocks_required; i++) {
         headers[i].is_occupied = true; headers[i].is_dir = false;
 
-        headers[i].prev = i > 0 ? (char)blocks[i - 1] : header.prev;
+        headers[i].mode = i > 0 ? 0 : header.mode;
         headers[i].next = i < blocks_required - 1 ? (char)blocks[i + 1] : 0;
 
         write_block(headers[i], file_contents.substr(i*(BLOCK_SIZE-2), BLOCK_SIZE-2), blocks[i], i == (blocks_required - 1));
@@ -112,6 +140,7 @@ string File::read(int start, int size) {
     }
     return file_contents.substr(0, size);
 }
+
 string File::read() {
     return read(0, MAX_INT);
 }
