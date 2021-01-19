@@ -173,6 +173,12 @@ void Directory::remove_entry(string file_name) {
 
 void Directory::clear() {
     Header header(&first_header);
+    mode_mtx.lock();
+    if (header.get_mode()) {
+        mode_mtx.unlock();
+        throw(file_name + " in use!\n");
+    }
+    mode_mtx.unlock();
 
     while (true) {
         Entry entry;

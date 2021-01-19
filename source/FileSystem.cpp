@@ -460,12 +460,12 @@ string FileSystem::run(string command) {
         }
     }
     else if (!tokens[0].compare("mv")) {
-        if (tokens.size() < 2 || !tokens[1].size() || !tokens[2].size())
+        if (tokens.size() != 3 || !tokens[1].size() || !tokens[2].size())
         {
             out_string += "Invalid Command! for help type 'man'\n";
         }
-        
-        out_string += mv(tokens[1], tokens[2]);
+        else
+            out_string += mv(tokens[1], tokens[2]);
     }
     else
     {
