@@ -52,5 +52,6 @@ void Connection::start() {
         cout << "response: " << output.c_str() << endl;
         send(socket_id , output.c_str(), strlen(output.c_str()) , 0 );
     }
+    file_system.close();
     cout << "Connection with "<< username << " closed!\nThread exiting ..."<< endl;
 }

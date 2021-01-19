@@ -409,22 +409,24 @@ string FileSystem::run(string command) {
     else if (!tokens[0].compare("write")) {
         string file_contents;
         
-        int start;
+        int start = 0;
         
         if (tokens.size() >= 3) {
             if (!tokens[1].compare("-s")) {
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+2);
+                out_string += write(file_contents, start);
             }
             else if (!tokens[2].compare("-s")) {
                 start = stoi(tokens[1]);
                 file_contents = command.substr(tokens[0].size()+tokens[1].size()+tokens[2].size()+3);
+                out_string += write(file_contents, start);
             }
             else {
                 out_string += "Invalid Arguments\n";
             }
         }
-
-        out_string += write(file_contents, start);
+        else
+        out_string += "Invalid Command! for help type 'man'\n";
     }
     else if (!tokens[0].compare("append")) {
         string file_contents;
@@ -437,19 +439,20 @@ string FileSystem::run(string command) {
                 out_string += "Invalid Arguments\n";
             }
         }
-
-        out_string += append(file_contents);
+        else
+            out_string += append(file_contents);
     }
     else if (!tokens[0].compare("trunc")) {
         if (!file_open) {
             out_string += "No file open\n";
         }
-        current_file->truncate(stoi(tokens[1]));
+        else current_file->truncate(stoi(tokens[1]));
     }
-    else if (!tokens[0].compare("mvwf")) {
+    else if (!tokens[0].compare("mvwf") && tokens.size() == 4 && tokens[1].size() && tokens[2].size() && tokens[3].size()) {
         if (!file_open) {
             out_string += "No file open\n";
         }
+        else
         try
         {
             current_file->move_within_file(stoi(tokens[1]), stoi(tokens[2]), stoi(tokens[3]));
@@ -498,6 +501,7 @@ void thread_wrapper(FileSystem file_system, string file_name) {
     else {    
         file_system.run_script(file);
     }
+    file_system.close();
     file.close();
     out_file.close();
 }

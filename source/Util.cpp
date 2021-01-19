@@ -432,7 +432,8 @@ string get_manual() {
         + "close" + "\t\t" + "\t\tclose" + "\t\t\tClose currently open file.\n"
         + "read" + "\t\t[start] [size]" + "\tread [options]" + "\t\tRead entire opened file.\n\t\t\t\t\t\t\tUse options to read from an offset or limit file size.\n"
         + "write" + "\t\t[start] [size]" + "\twrite [options]" + "\t\tWrite to opened file. It overwrites existing file.\n\t\t\t\t\t-s [content]\tUse options to modify existing file content.\n"
-        + "append" + "\t\t-s [contents]" + "\tappend [options]" + "\tWrite to opened file. It writes to the end of existing file.\n\t\t\t\t\t-s [content]\n"
+        + "append" + "\t\t\t" + "\tappend -s [content]" + "\tWrite to opened file. It writes to the end of existing file.\n"
+        + "mvwf" + "\t\t\t" + "\tmvwf [start] [size]" + "\tCopies the specified bytes to the target.\n\t\t\t\t\t[target]\n"
         + "trunc" + "\t\t" + "\t\ttrunc [size]" + "\t\tTruncate opened file to size.\n"
         + "man" + "\t\t" + "\t\tman" + "\t\t\tOpen Manual\n"
 

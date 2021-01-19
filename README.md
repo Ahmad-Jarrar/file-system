@@ -13,9 +13,6 @@
   - [File System Over Network](#file-system-over-network)
     - [Server](#server)
     - [Client](#client)
-  - [Thread Safety](#thread-safety)
-    - [File Modes](#file-modes)
-    - [Locks](#locks)
 
 ## Introduction
 
@@ -108,30 +105,3 @@ To run the client application, use:
 ```
 ./client
 ```
-
-## Thread Safety
-
-As our server is multithread capable we need to make our operations thread safe to avoid corruption of file system.
-
-We achieve this using two strategies.
-
-### File Modes
-
-Files can be opened in two levels of permissions.
-Files can be opened in read only mode in which user cannot modify the content of the file. This mode allows multiple users to read the file at the same time. We maintain the number of users reading the file in the header of the first block of the file.
-
-Write mode allows both read and write operations. File needs to be opened in this mode to be modified. This mode restricts the access to the file to one user only. In addition user cannot open file in write mode if someone else has already opened it.
-
-Directories only have a single mode unused/used. When some file is open in any mode all the folders in path from file to root directory are marked as used. This prevents deleting or moving any of these folders.
-
-Similarly delete and move operations are disabled for the opened file.
-
-### Locks
-
-We have used 3 mutex locks to synchronize entire file system.
-
-Fist one is used to make the access to the physical file atomic operations. This makes sure that the there are no errors when OS tries to seek to different parts of the file as we need random I/O. Our file perations are designed in a way that we need access to physical file for very small propotion of the time needed by the functions so locking does not affect performance for small number of users at a time. This feature essentially emulates single read/write head on disk.
-
-Second lock is used to make our block allocation atomic. It is the biggest potential fail point where data in our file system can corrupt, if 2 or more files are allocated the same block in memory.
-
-Last lock is used to make the the file mode operations (`get_mode`, `set_mode`, `clear_mode`) atomic. This lock ensures that information about a file's mode is up to date and stable while the mode values are being changed.
